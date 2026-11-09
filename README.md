@@ -11,6 +11,13 @@ a Retry button; nothing else in the app is affected.
 2. File > Open > select this folder. Let Gradle sync (it downloads Gradle 8.7 from the wrapper properties).
 3. Run on an emulator or device, Android 8.0 (API 26) or higher.
 
+## Running Review Plan (FR21) end-to-end
+1. In `bluebook-companion-be`: `npm install && npm run dev` (starts the API on `:8787`).
+2. Run this app on an **emulator** — `AppConfig.API_BASE_URL` already defaults to `http://10.0.2.2:8787`,
+   the emulator's built-in alias for the host. No extra setup.
+3. On a **physical device** instead: run `adb reverse tcp:8787 tcp:8787`, and change
+   `API_BASE_URL` to `http://127.0.0.1:8787` (10.0.2.2 only resolves inside an emulator).
+
 ## The core flow
 Splash > accept privacy notice > Answer Sheet tab > Set A > Mathematics > Geometry (the only published set) >
 Answer, flag, Save and Exit > Home shows "Continue?" > Submit > Results > Analysis / Answer Key.

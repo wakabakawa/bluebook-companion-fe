@@ -20,8 +20,8 @@ object AppConfig {
     const val BUDGET_STEP_MIN = 10
     const val DEFAULT_MIN_STRONG = 1
 
-    // physical device + `adb reverse tcp:8787 tcp:8787`; emulator: use http://10.0.2.2:8787
-    const val API_BASE_URL = "http://127.0.0.1:8787"
+    // emulator default; physical device: `adb reverse tcp:8787 tcp:8787` and use http://127.0.0.1:8787
+    const val API_BASE_URL = "http://10.0.2.2:8787"
     const val REVIEW_PLAN_PATH = "/api/v1/algorithm/solve"
     const val API_TIMEOUT_SECONDS = 15L
 }
