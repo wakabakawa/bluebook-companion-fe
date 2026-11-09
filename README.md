@@ -8,7 +8,7 @@ so nothing is blocked on the backend.
 2. File > Open > select this folder. Let Gradle sync (it downloads Gradle 8.7 from the wrapper properties).
 3. Run on an emulator or device, Android 8.0 (API 26) or higher.
 
-## Try the core flow
+## The core flow
 Splash > accept privacy notice > Answer Sheet tab > Set A > Mathematics > Geometry (the only published set)
 > answer, flag, Save and Exit > Home shows "Continue?" > Submit > Results > Analysis / Answer Key.
 Other sets show "No published answer key yet" on purpose (FR05).
@@ -23,11 +23,10 @@ Other sets show "No published answer key yet" on purpose (FR05).
 - `ui/components/`       reusable pieces (answer rows, cards, bars, dialogs).
 - `ui/screens/`          one file per screen group.
 
-## Known gaps (need a decision, not just code)
+## Known gaps 
 - Logo/branding images (placeholders in text), Inter font, exact hex values.
 - Not built, not designed: Cognitive Skill analysis (FR15), Progress Over Time (FR19), Estimated Score (FR20),
   Review Plan (FR21), Cohort Comparison (FR22), jump-to-item (FR06).
 - Exam Date card exists in the design but not in any requirement or user story.
 - Terms and Conditions text is a placeholder.
 - Answer key versioning (BR06) and the real backend are not wired.
-- Not compiled or run in the environment this was generated in. Expect a few small fixes on first sync.
