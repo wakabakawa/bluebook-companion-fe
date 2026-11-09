@@ -1,6 +1,7 @@
 package com.achievo.bluebook.data
 
 import android.content.Context
+import java.util.UUID
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -53,10 +54,19 @@ class LocalStore(context: Context) {
     fun reminderHidden() = sp.getBoolean("reminderHidden", false)
     fun setReminderHidden(v: Boolean) { sp.edit().putBoolean("reminderHidden", v).apply() }
 
+    /**
+     * Anonymous per-install id, sent to the backend as profile_id (NFR01, BR01):
+     * random, not derived from the device or the person. Generated on first use.
+     */
+    fun profileId(): String =
+        sp.getString("profileId", null) ?: UUID.randomUUID().toString().also {
+            sp.edit().putString("profileId", it).apply()
+        }
+
     /** FR24: clears history, unfinished sheet and profile. The privacy acknowledgement is kept. */
     fun clearHistoryAndProfile() {
         sp.edit().remove("attempts").remove("draft").remove("nick").remove("school")
-            .remove("course").remove("examDate").apply()
+            .remove("course").remove("examDate").remove("profileId").apply()
     }
 }
 

@@ -55,7 +55,8 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     vm,
                     onStartNew = { goTab("sets") },
                     onContinue = { nav.navigate("sheet/$it") },
-                    onOpenResult = { nav.navigate("result/$it") }
+                    onOpenResult = { nav.navigate("result/$it") },
+                    onReviewPlan = { nav.navigate("reviewplan") }
                 )
             }
             composable("sets") { SetsScreen(vm) { nav.navigate("sheet/$it") } }
@@ -85,8 +86,15 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     }
                 )
             }
-            composable("mastery/{id}") { e -> MasteryScreen(vm, e.arguments?.getString("id") ?: "") { nav.popBackStack() } }
+            composable("mastery/{id}") { e ->
+                MasteryScreen(
+                    vm, e.arguments?.getString("id") ?: "",
+                    onReviewPlan = { nav.navigate("reviewplan") },
+                    onBack = { nav.popBackStack() }
+                )
+            }
             composable("review/{id}") { e -> ReviewScreen(vm, e.arguments?.getString("id") ?: "") { nav.popBackStack() } }
+            composable("reviewplan") { ReviewPlanScreen(vm) { nav.popBackStack() } }
         }
     }
 }

@@ -81,6 +81,68 @@ fun branchMastery(attempts: List<Attempt>, subject: String): List<Slice> {
     }
 }
 
+/** The PDF's proposed per-difficulty review budget (distinct from AppConfig.REFERENCE_SECONDS). */
+fun refSecondsOf(d: Difficulty): Int = when (d) {
+    Difficulty.EASY -> AppConfig.EASY_REF_SECONDS
+    Difficulty.AVERAGE -> AppConfig.AVERAGE_REF_SECONDS
+    Difficulty.HARD -> AppConfig.HARD_REF_SECONDS
+}
+
+fun topicIdOf(t: ItemTag): String = "${t.subject}|${t.branch}|${t.topic}"
+
+/** FR21: book-wide per-topic stats across ALL attempts, for the review-plan optimizer. */
+fun topicStats(attempts: List<Attempt>, now: Long = System.currentTimeMillis()): List<TopicStat> {
+    val tagsByTopic = SampleData.sheets
+        .filter { it.published }
+        .flatMap { it.tags!! }
+        .groupBy { topicIdOf(it) }
+
+    return tagsByTopic.map { (topicId, tags) ->
+        val first = tags.first()
+        val itemsInBook = tags.size
+        val refTimeSec = tags.map { refSecondsOf(it.difficulty) }.average().roundToInt().coerceAtLeast(1)
+        val bookPageRef = tags.mapNotNull { it.bookPage }.minOrNull()
+
+        var answered = 0
+        var correct = 0
+        var lastPracticedAt: Long? = null
+
+        attempts.forEach { a ->
+            val sheet = SampleData.sheets.firstOrNull { it.id == a.sheetId }
+            val key = sheet?.key
+            val sheetTags = sheet?.tags
+            if (sheet != null && key != null && sheetTags != null) {
+                var touchedThisAttempt = false
+                a.answers.forEachIndexed { i, ans ->
+                    if (ans != null && i < sheetTags.size && i < key.size && topicIdOf(sheetTags[i]) == topicId) {
+                        answered++
+                        if (ans == key[i]) correct++
+                        touchedThisAttempt = true
+                    }
+                }
+                if (touchedThisAttempt) {
+                    lastPracticedAt = maxOf(lastPracticedAt ?: a.submittedAt, a.submittedAt)
+                }
+            }
+        }
+
+        val daysSincePractice = lastPracticedAt?.let { ((now - it) / 86_400_000L).toInt().coerceAtLeast(0) }
+
+        TopicStat(
+            topicId = topicId,
+            subject = first.subject,
+            branch = first.branch,
+            topic = first.topic,
+            itemsInBook = itemsInBook,
+            answered = answered,
+            correct = correct,
+            daysSincePractice = daysSincePractice,
+            refTimeSec = refTimeSec,
+            bookPageRef = bookPageRef
+        )
+    }
+}
+
 /** FR17: fast/slow x correct/wrong against the reference time (default from AppConfig, CC03). */
 fun speedOf(sheet: Sheet, a: Attempt, ref: Int = AppConfig.REFERENCE_SECONDS): SpeedResult {
     val key = sheet.key ?: return SpeedResult(emptyList(), 0, 0)

@@ -48,3 +48,50 @@ data class Attempt(
 )
 
 data class Profile(val nickname: String = "", val school: String = "", val course: String = "")
+
+/** One topic's book-wide statistics as the review-plan optimizer needs them (FR21). */
+data class TopicStat(
+    val topicId: String,
+    val subject: String,
+    val branch: String,
+    val topic: String,
+    val itemsInBook: Int,
+    val answered: Int,
+    val correct: Int,
+    val daysSincePractice: Int?,
+    val refTimeSec: Int,
+    val bookPageRef: Int?
+)
+
+/** FR21 optimizer outcome. UNKNOWN keeps a newer server from crashing an older build. */
+enum class PlanStatus { OPTIMAL, OPTIMAL_RELAXED_Q, BUDGET_TOO_SMALL, EMPTY_INPUT, UNKNOWN }
+
+data class ReviewPlanEntry(
+    val rank: Int,
+    val topicId: String,
+    val costMin: Int,
+    val value: Double,
+    val mastery: Double,
+    val weakness: Double,
+    val staleness: Double,
+    val strong: Boolean,
+    val reliable: Boolean,
+    val bookPageRef: Int?
+)
+
+/** One review plan from POST /api/v1/algorithm/solve (FR21). */
+data class ReviewPlan(
+    val requestId: String,
+    val status: PlanStatus,
+    val exact: Boolean,
+    val objective: Double,
+    val budgetMin: Int,
+    val totalCostMin: Int,
+    val qRequested: Int,
+    val qUsed: Int,
+    val strongSelected: Int,
+    val entries: List<ReviewPlanEntry>,
+    val excludedTopicIds: List<String>,
+    val warnings: List<String>,
+    val engineLabel: String?
+)

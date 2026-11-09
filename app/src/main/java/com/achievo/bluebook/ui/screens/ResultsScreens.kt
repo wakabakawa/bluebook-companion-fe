@@ -99,7 +99,7 @@ fun ResultScreen(
 
 /** Mastery per branch (all attempts), speed split, and weak topics with book pages (FR13, FR17, FR18, FR21). */
 @Composable
-fun MasteryScreen(vm: AppViewModel, attemptId: String, onBack: () -> Unit) {
+fun MasteryScreen(vm: AppViewModel, attemptId: String, onReviewPlan: () -> Unit, onBack: () -> Unit) {
     val a = vm.attempt(attemptId)
     val s = a?.let { vm.sheet(it.sheetId) }
     if (a == null || s == null) {
@@ -172,6 +172,8 @@ fun MasteryScreen(vm: AppViewModel, attemptId: String, onBack: () -> Unit) {
                                 Text("${t.percent}%  (${t.correct}/${t.answered})", color = Maroon, fontWeight = FontWeight.Bold)
                             }
                         }
+                        Spacer(Modifier.height(8.dp))
+                        OutlineButton("View Review Plan", onReviewPlan, Modifier.fillMaxWidth())
                     }
                 }
             }

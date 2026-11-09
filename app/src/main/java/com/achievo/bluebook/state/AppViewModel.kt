@@ -5,8 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.achievo.bluebook.data.*
 import java.util.UUID
+import kotlinx.coroutines.launch
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val store = LocalStore(app)
@@ -109,5 +111,42 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         draft = null
         profile = Profile()
         examDate = null
+        reviewPlan = null
+        reviewPlanError = null
+        reviewTopics = emptyList()
     }
+
+    // ---- review plan (FR21) — the app's first networked feature.
+    // Precedent for async state: one <feature> / <feature>Loading / <feature>Error triple
+    // of plain mutableStateOf, matching the synchronous style above.
+    var reviewBudgetMin by mutableStateOf(AppConfig.DEFAULT_BUDGET_MIN)
+        private set
+    var reviewTopics by mutableStateOf<List<TopicStat>>(emptyList())
+        private set
+    var reviewPlan by mutableStateOf<ReviewPlan?>(null)
+        private set
+    var reviewPlanLoading by mutableStateOf(false)
+        private set
+    var reviewPlanError by mutableStateOf<String?>(null)
+        private set
+
+    fun setReviewBudget(minutes: Int) {
+        reviewBudgetMin = minutes.coerceIn(AppConfig.MIN_BUDGET_MIN, AppConfig.MAX_BUDGET_MIN)
+    }
+
+    fun loadReviewPlan() {
+        if (reviewPlanLoading) return
+        reviewPlanLoading = true
+        reviewPlanError = null
+        val topics = topicStats(attempts)
+        reviewTopics = topics
+        viewModelScope.launch {
+            ReviewPlanApi.solve(store.profileId(), topics, reviewBudgetMin, AppConfig.DEFAULT_MIN_STRONG)
+                .onSuccess { reviewPlan = it }
+                .onFailure { reviewPlanError = it.message ?: "Couldn't build a review plan." }
+            reviewPlanLoading = false
+        }
+    }
+
+    fun dismissReviewPlanError() { reviewPlanError = null }
 }

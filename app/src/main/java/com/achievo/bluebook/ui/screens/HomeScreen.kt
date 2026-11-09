@@ -32,7 +32,8 @@ fun HomeScreen(
     vm: AppViewModel,
     onStartNew: () -> Unit,
     onContinue: (String) -> Unit,
-    onOpenResult: (String) -> Unit
+    onOpenResult: (String) -> Unit,
+    onReviewPlan: () -> Unit
 ) {
     val activity = LocalContext.current as? Activity
     var showPicker by remember { mutableStateOf(false) }
@@ -150,6 +151,8 @@ fun HomeScreen(
                                 }
                             }
                         }
+                        Spacer(Modifier.height(8.dp))
+                        OutlineButton("View Review Plan", onReviewPlan, Modifier.fillMaxWidth())
                     }
                 }
             }
