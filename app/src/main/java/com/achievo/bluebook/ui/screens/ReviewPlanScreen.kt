@@ -72,10 +72,6 @@ fun ReviewPlanScreen(vm: AppViewModel, onBack: () -> Unit) {
                     )
                 }
 
-                plan.warnings.forEach { w ->
-                    item { Text(w, fontSize = 11.sp, color = Muted) }
-                }
-
                 when (plan.status) {
                     PlanStatus.OPTIMAL_RELAXED_Q -> item {
                         Text(

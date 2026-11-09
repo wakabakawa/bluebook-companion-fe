@@ -116,9 +116,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         reviewTopics = emptyList()
     }
 
-    // ---- review plan (FR21) — the app's first networked feature.
-    // Precedent for async state: one <feature> / <feature>Loading / <feature>Error triple
-    // of plain mutableStateOf, matching the synchronous style above.
+    // ---- review plan (FR21) ----
     var reviewBudgetMin by mutableStateOf(AppConfig.DEFAULT_BUDGET_MIN)
         private set
     var reviewTopics by mutableStateOf<List<TopicStat>>(emptyList())

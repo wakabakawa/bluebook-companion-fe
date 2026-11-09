@@ -4,10 +4,10 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.toMediaType
-import okhttp3.toRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -85,8 +85,7 @@ private fun TopicStat.toWireJson(): JSONObject {
         .put("answered", answered)
         .put("correct", correct)
         .put("ref_time_sec", refTimeSec)
-    // put(key, null) removes the key in org.json — use JSONObject.NULL so the field
-    // stays present (the server's schema requires it, nullable).
+    // org.json's put(key, null) removes the key — use JSONObject.NULL to keep it present
     o.put("days_since_practice", daysSincePractice ?: JSONObject.NULL)
     o.put("cohort_mastery", JSONObject.NULL)
     o.put("book_page_ref", bookPageRef ?: JSONObject.NULL)
