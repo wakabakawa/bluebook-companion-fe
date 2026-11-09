@@ -9,8 +9,8 @@ so nothing is blocked on the backend.
 3. Run on an emulator or device, Android 8.0 (API 26) or higher.
 
 ## The core flow
-Splash > accept privacy notice > Answer Sheet tab > Set A > Mathematics > Geometry (the only published set)
-> answer, flag, Save and Exit > Home shows "Continue?" > Submit > Results > Analysis / Answer Key.
+Splash > accept privacy notice > Answer Sheet tab > Set A > Mathematics > Geometry (the only published set) >
+Answer, flag, Save and Exit > Home shows "Continue?" > Submit > Results > Analysis / Answer Key.
 Other sets show "No published answer key yet" on purpose (FR05).
 
 ## Where things are
