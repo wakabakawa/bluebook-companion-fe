@@ -1,5 +1,6 @@
 package com.achievo.bluebook.data
 
+import com.achievo.bluebook.BuildConfig
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
