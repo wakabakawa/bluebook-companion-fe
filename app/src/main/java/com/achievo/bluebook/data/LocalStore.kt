@@ -1,7 +1,6 @@
 package com.achievo.bluebook.data
 
 import android.content.Context
-import java.util.UUID
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -55,18 +54,21 @@ class LocalStore(context: Context) {
     fun setReminderHidden(v: Boolean) { sp.edit().putBoolean("reminderHidden", v).apply() }
 
     /**
-     * Anonymous per-install id, sent to the backend as profile_id (NFR01, BR01):
-     * random, not derived from the device or the person. Generated on first use.
+     * Cache of the Supabase-issued anonymous user id (AuthRepository.ensureSession() writes
+     * this) — a cache for display/offline rendering, never the source of truth. Supabase's own
+     * Auth session storage is what's authoritative.
      */
-    fun profileId(): String =
-        sp.getString("profileId", null) ?: UUID.randomUUID().toString().also {
-            sp.edit().putString("profileId", it).apply()
-        }
+    fun cachedUserId(): String? = sp.getString("cachedUserId", null)
+    fun saveCachedUserId(id: String?) {
+        val e = sp.edit()
+        if (id == null) e.remove("cachedUserId") else e.putString("cachedUserId", id)
+        e.apply()
+    }
 
     /** FR24: clears history, unfinished sheet and profile. The privacy acknowledgement is kept. */
     fun clearHistoryAndProfile() {
         sp.edit().remove("attempts").remove("draft").remove("nick").remove("school")
-            .remove("course").remove("examDate").remove("profileId").apply()
+            .remove("course").remove("examDate").remove("cachedUserId").apply()
     }
 }
 

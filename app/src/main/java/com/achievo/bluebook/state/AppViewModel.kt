@@ -7,8 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.achievo.bluebook.data.*
+import io.github.jan.supabase.auth.auth
 import java.util.UUID
 import kotlinx.coroutines.launch
+
+enum class AuthPhase { IDLE, SIGNING_IN, READY, OFFLINE }
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val store = LocalStore(app)
@@ -25,6 +28,29 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var reminderHidden by mutableStateOf(store.reminderHidden())
         private set
+
+    // ---- auth (anonymous sign-in, gated on the privacy notice — FR04) ----
+    var authPhase by mutableStateOf(AuthPhase.IDLE)
+        private set
+    var authError by mutableStateOf<String?>(null)
+        private set
+
+    init {
+        if (privacyAccepted) ensureSession()
+    }
+
+    private fun ensureSession() {
+        if (authPhase == AuthPhase.SIGNING_IN) return
+        authPhase = AuthPhase.SIGNING_IN
+        viewModelScope.launch {
+            AuthRepository.ensureSession(store)
+                .onSuccess { authPhase = AuthPhase.READY }
+                .onFailure {
+                    authPhase = AuthPhase.OFFLINE
+                    authError = it.message
+                }
+        }
+    }
 
     fun sheet(id: String): Sheet? = SampleData.sheets.firstOrNull { it.id == id }
     fun attempt(id: String): Attempt? = attempts.firstOrNull { it.id == id }
@@ -102,7 +128,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ---- profile, privacy, settings ----
     fun saveProfile(p: Profile) { profile = p; store.saveProfile(p) }
     fun updateExamDate(iso: String?) { examDate = iso; store.saveExamDate(iso) }
-    fun acceptPrivacy() { privacyAccepted = true; store.setPrivacyAccepted(true) }
+    fun acceptPrivacy() { privacyAccepted = true; store.setPrivacyAccepted(true); ensureSession() }
     fun hideReminder() { reminderHidden = true; store.setReminderHidden(true) }
 
     fun clearLocalData() {
@@ -114,6 +140,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         reviewPlan = null
         reviewPlanError = null
         reviewTopics = emptyList()
+        authPhase = AuthPhase.IDLE
+        viewModelScope.launch {
+            runCatching { Supa.client.auth.signOut() }
+            ensureSession()
+        }
     }
 
     // ---- review plan (FR21) ----
@@ -138,8 +169,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         reviewPlanError = null
         val topics = topicStats(attempts)
         reviewTopics = topics
+        val profileId = store.cachedUserId() ?: UUID.randomUUID().toString()
         viewModelScope.launch {
-            ReviewPlanApi.solve(store.profileId(), topics, reviewBudgetMin, AppConfig.DEFAULT_MIN_STRONG)
+            ReviewPlanApi.solve(profileId, topics, reviewBudgetMin, AppConfig.DEFAULT_MIN_STRONG)
                 .onSuccess { reviewPlan = it }
                 .onFailure { reviewPlanError = it.message ?: "Couldn't build a review plan." }
             reviewPlanLoading = false
