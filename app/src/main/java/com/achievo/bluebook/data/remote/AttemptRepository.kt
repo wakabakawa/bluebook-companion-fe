@@ -24,7 +24,13 @@ private data class SubmitParams(
 )
 
 @Serializable
-private data class ResultRow(val position: Int, val selected_choice: String?, val is_correct: Boolean, val correct_choice: String?)
+private data class ResultRow(
+    val position: Int,
+    val selected_choice: String?,
+    val is_correct: Boolean,
+    val correct_choice: String?,
+    val key_version_id: String?
+)
 
 /** The only path that scores an attempt — the answer key never reaches this client (SEC-08/09/11). */
 object AttemptRepository {
@@ -53,7 +59,8 @@ object AttemptRepository {
             totalSeconds = draft.elapsedSeconds,
             submittedAt = System.currentTimeMillis(),
             outcomes = outcomes,
-            correctLetters = correctLetters
+            correctLetters = correctLetters,
+            keyVersionId = rows.firstOrNull()?.key_version_id
         )
     }
 }

@@ -150,12 +150,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             runCatching { AttemptRepository.submit(sheet.id, d) }
                 .onSuccess { a ->
-                    val scored = a.copy(keyVersionId = sheet.keyVersionId)
-                    attempts = attempts + scored
+                    attempts = attempts + a
                     store.saveAttempts(attempts)
                     draft = null
                     store.saveDraft(null)
-                    submittedAttemptId = scored.id
+                    submittedAttemptId = a.id
                 }
                 .onFailure { submitError = it.toUserMessage("Couldn't submit — your answers are saved. Try again.") }
             submitLoading = false

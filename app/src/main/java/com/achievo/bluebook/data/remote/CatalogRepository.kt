@@ -15,8 +15,7 @@ private data class SheetRow(
     val branch: String,
     val item_count: Int,
     val allotment_seconds: Int,
-    val published: Boolean,
-    val key_version_id: String?
+    val published: Boolean
 )
 
 @Serializable
@@ -46,8 +45,7 @@ object CatalogRepository {
                 itemCount = r.item_count,
                 allotmentSeconds = r.allotment_seconds,
                 tags = itemsBySheet[r.sheet_id]?.sortedBy { it.item_no }?.map { it.toItemTag(r.subject, r.branch) },
-                published = r.published,
-                keyVersionId = r.key_version_id
+                published = r.published
             )
         }
     }

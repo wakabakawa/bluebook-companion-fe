@@ -21,8 +21,7 @@ data class Sheet(
     val itemCount: Int,
     val allotmentSeconds: Int,
     val tags: List<ItemTag>?,
-    val published: Boolean,
-    val keyVersionId: String? = null
+    val published: Boolean
 ) {
     val title: String get() = "$branch: $setName"
 }
