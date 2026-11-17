@@ -37,6 +37,8 @@ data class Draft(
     val startedAt: Long
 )
 
+enum class ItemOutcome { CORRECT, WRONG, BLANK }
+
 data class Attempt(
     val id: String,
     val sheetId: String,
@@ -44,7 +46,12 @@ data class Attempt(
     val flagged: Set<Int>,
     val itemSeconds: List<Int>,
     val totalSeconds: Int,
-    val submittedAt: Long
+    val submittedAt: Long,
+    /** null = not yet scored. Scored locally (bridge) until server-side scoring (submit_attempt RPC) lands. */
+    val outcomes: List<ItemOutcome>? = null,
+    /** null = key not available/revealed for this attempt. */
+    val correctLetters: List<Char>? = null,
+    val keyVersionId: String? = null
 )
 
 data class Profile(val nickname: String = "", val school: String = "", val course: String = "")

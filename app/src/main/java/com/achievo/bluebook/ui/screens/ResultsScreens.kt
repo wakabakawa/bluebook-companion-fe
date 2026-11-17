@@ -49,7 +49,7 @@ fun ResultsListScreen(vm: AppViewModel, onOpen: (String) -> Unit) {
         LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(list) { a ->
                 val s = vm.sheet(a.sheetId)
-                if (s != null) ResultSummaryCard(s, scoreOf(s, a), dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") { onOpen(a.id) }
+                if (s != null) ResultSummaryCard(s, scoreOf(a), dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") { onOpen(a.id) }
             }
         }
     }
@@ -71,7 +71,7 @@ fun ResultScreen(
         LaunchedEffect(Unit) { onBack() }
         return
     }
-    val score = scoreOf(s, a)
+    val score = scoreOf(a)
     val slices = difficultySlices(s, a)
     val colors = listOf(CorrectGreen, FlagAmber, WrongRed)
     Column(Modifier.fillMaxSize()) {
@@ -106,9 +106,9 @@ fun MasteryScreen(vm: AppViewModel, attemptId: String, onReviewPlan: () -> Unit,
         LaunchedEffect(Unit) { onBack() }
         return
     }
-    val score = scoreOf(s, a)
+    val score = scoreOf(a)
     val branches = branchMastery(vm.attempts, s.subject)
-    val speed = speedOf(s, a)
+    val speed = speedOf(a)
     val weak = topicSlices(s, a).filter { it.answered > 0 }.sortedBy { it.percent }.take(3)
 
     Column(Modifier.fillMaxSize()) {

@@ -106,9 +106,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         store.saveDraft(null)
     }
 
-    /** Submitted attempts are final (FR09). TODO: record answer key version (BR06) once keys are versioned. */
+    /**
+     * Submitted attempts are final (FR09). Scored locally from the sample key for now — a
+     * bridge until submit_attempt() takes over (Step 4), at which point the key leaves the
+     * client entirely and this becomes a server round-trip instead.
+     * TODO: record answer key version (BR06) once keys are versioned.
+     */
     fun submit(): String? {
         val d = draft ?: return null
+        val key = sheet(d.sheetId)?.key
+        val outcomes = key?.let { k ->
+            d.answers.mapIndexed { i, ans -> if (ans == null) ItemOutcome.BLANK else if (ans == k.getOrNull(i)) ItemOutcome.CORRECT else ItemOutcome.WRONG }
+        }
         val a = Attempt(
             id = UUID.randomUUID().toString(),
             sheetId = d.sheetId,
@@ -116,7 +125,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             flagged = d.flagged,
             itemSeconds = d.itemSeconds,
             totalSeconds = d.elapsedSeconds,
-            submittedAt = System.currentTimeMillis()
+            submittedAt = System.currentTimeMillis(),
+            outcomes = outcomes,
+            correctLetters = key
         )
         attempts = attempts + a
         store.saveAttempts(attempts)

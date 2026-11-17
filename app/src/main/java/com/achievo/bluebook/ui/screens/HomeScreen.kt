@@ -127,7 +127,7 @@ fun HomeScreen(
             if (latest != null && latestSheet != null) {
                 item {
                     ResultSummaryCard(
-                        latestSheet, scoreOf(latestSheet, latest),
+                        latestSheet, scoreOf(latest),
                         dateText(latest.submittedAt), "${mmss(latest.totalSeconds)} mins"
                     ) { onOpenResult(latest.id) }
                 }

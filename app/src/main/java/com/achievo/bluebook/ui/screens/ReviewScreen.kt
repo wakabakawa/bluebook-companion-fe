@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.achievo.bluebook.data.ItemOutcome
 import com.achievo.bluebook.state.AppViewModel
 import com.achievo.bluebook.ui.components.*
 import com.achievo.bluebook.ui.theme.*
@@ -26,9 +27,10 @@ private enum class Filter(val label: String, val color: Color) {
 fun ReviewScreen(vm: AppViewModel, attemptId: String, onBack: () -> Unit) {
     val a = vm.attempt(attemptId)
     val s = a?.let { vm.sheet(it.sheetId) }
-    val key = s?.key
+    val outcomes = a?.outcomes
+    val correctLetters = a?.correctLetters
     val tags = s?.tags
-    if (a == null || s == null || key == null || tags == null) {
+    if (a == null || s == null || outcomes == null || correctLetters == null || tags == null) {
         LaunchedEffect(Unit) { onBack() }
         return
     }
@@ -36,9 +38,9 @@ fun ReviewScreen(vm: AppViewModel, attemptId: String, onBack: () -> Unit) {
     val indices = a.answers.indices.filter { i ->
         when (filter) {
             null -> true
-            Filter.RIGHT -> a.answers[i] != null && a.answers[i] == key[i]
-            Filter.WRONG -> a.answers[i] != null && a.answers[i] != key[i]
-            Filter.BLANK -> a.answers[i] == null
+            Filter.RIGHT -> outcomes[i] == ItemOutcome.CORRECT
+            Filter.WRONG -> outcomes[i] == ItemOutcome.WRONG
+            Filter.BLANK -> outcomes[i] == ItemOutcome.BLANK
             Filter.FLAGGED -> i in a.flagged
         }
     }
@@ -55,7 +57,7 @@ fun ReviewScreen(vm: AppViewModel, attemptId: String, onBack: () -> Unit) {
                 val t = tags[i]
                 val line = listOfNotNull(t.branch, t.topic, t.keyConcept, t.cognitiveSkill, t.difficulty.label, t.bookPage?.let { "Book pg $it" })
                     .joinToString(" · ")
-                AnswerReviewRow(i + 1, a.answers[i], key[i], i in a.flagged, line)
+                AnswerReviewRow(i + 1, a.answers[i], correctLetters[i], i in a.flagged, line)
             }
         }
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

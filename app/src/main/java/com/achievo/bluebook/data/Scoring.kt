@@ -16,14 +16,14 @@ data class SpeedBucket(val label: String, val count: Int, val avgSeconds: Int)
 data class SpeedResult(val buckets: List<SpeedBucket>, val answered: Int, val avgSeconds: Int)
 
 /** FR10 / BR05: blank is scored incorrect but reported separately. */
-fun scoreOf(sheet: Sheet, a: Attempt): ScoreResult {
-    val key = sheet.key ?: return ScoreResult(0, 0, a.answers.size, a.flagged.size, a.answers.size)
+fun scoreOf(a: Attempt): ScoreResult {
+    val outcomes = a.outcomes ?: return ScoreResult(0, 0, a.answers.size, a.flagged.size, a.answers.size)
     var c = 0; var w = 0; var b = 0
-    a.answers.forEachIndexed { i, ans ->
-        when {
-            ans == null -> b++
-            ans == key[i] -> c++
-            else -> w++
+    outcomes.forEach { o ->
+        when (o) {
+            ItemOutcome.CORRECT -> c++
+            ItemOutcome.WRONG -> w++
+            ItemOutcome.BLANK -> b++
         }
     }
     return ScoreResult(c, w, b, a.flagged.size, a.answers.size)
@@ -31,14 +31,14 @@ fun scoreOf(sheet: Sheet, a: Attempt): ScoreResult {
 
 /** FR16: percent correct per difficulty, computed from answered items only. */
 fun difficultySlices(sheet: Sheet, a: Attempt): List<Slice> {
-    val key = sheet.key ?: return emptyList()
+    val outcomes = a.outcomes ?: return emptyList()
     val tags = sheet.tags ?: return emptyList()
     return Difficulty.values().map { d ->
         var c = 0; var n = 0
-        a.answers.forEachIndexed { i, ans ->
-            if (ans != null && tags[i].difficulty == d) {
+        outcomes.forEachIndexed { i, o ->
+            if (o != ItemOutcome.BLANK && i < tags.size && tags[i].difficulty == d) {
                 n++
-                if (ans == key[i]) c++
+                if (o == ItemOutcome.CORRECT) c++
             }
         }
         Slice(d.label, c, n)
@@ -47,13 +47,13 @@ fun difficultySlices(sheet: Sheet, a: Attempt): List<Slice> {
 
 /** Weak/strong topics of one attempt, with the book page so the student knows where to go back (FR18, FR21). */
 fun topicSlices(sheet: Sheet, a: Attempt): List<Slice> {
-    val key = sheet.key ?: return emptyList()
+    val outcomes = a.outcomes ?: return emptyList()
     val tags = sheet.tags ?: return emptyList()
     return tags.indices.groupBy { tags[it].topic }.map { (topic, idx) ->
-        val answeredIdx = idx.filter { a.answers[it] != null }
+        val answeredIdx = idx.filter { it < outcomes.size && outcomes[it] != ItemOutcome.BLANK }
         Slice(
             label = topic,
-            correct = answeredIdx.count { a.answers[it] == key[it] },
+            correct = answeredIdx.count { outcomes[it] == ItemOutcome.CORRECT },
             answered = answeredIdx.size,
             note = tags[idx.first()].bookPage?.let { "Pg $it" }
         )
@@ -144,18 +144,18 @@ fun topicStats(attempts: List<Attempt>, now: Long = System.currentTimeMillis()):
 }
 
 /** FR17: fast/slow x correct/wrong against the reference time (default from AppConfig, CC03). */
-fun speedOf(sheet: Sheet, a: Attempt, ref: Int = AppConfig.REFERENCE_SECONDS): SpeedResult {
-    val key = sheet.key ?: return SpeedResult(emptyList(), 0, 0)
+fun speedOf(a: Attempt, ref: Int = AppConfig.REFERENCE_SECONDS): SpeedResult {
+    val outcomes = a.outcomes ?: return SpeedResult(emptyList(), 0, 0)
     val groups = linkedMapOf(
         "Fast & Correct" to mutableListOf<Int>(),
         "Slow & Correct" to mutableListOf<Int>(),
         "Fast & Wrong" to mutableListOf<Int>(),
         "Slow & Wrong" to mutableListOf<Int>()
     )
-    a.answers.forEachIndexed { i, ans ->
-        if (ans != null) {
+    outcomes.forEachIndexed { i, o ->
+        if (o != ItemOutcome.BLANK) {
             val t = a.itemSeconds[i]
-            val k = (if (t <= ref) "Fast" else "Slow") + " & " + (if (ans == key[i]) "Correct" else "Wrong")
+            val k = (if (t <= ref) "Fast" else "Slow") + " & " + (if (o == ItemOutcome.CORRECT) "Correct" else "Wrong")
             groups.getValue(k).add(t)
         }
     }
