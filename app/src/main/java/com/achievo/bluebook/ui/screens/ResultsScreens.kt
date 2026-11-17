@@ -107,7 +107,7 @@ fun MasteryScreen(vm: AppViewModel, attemptId: String, onReviewPlan: () -> Unit,
         return
     }
     val score = scoreOf(a)
-    val branches = branchMastery(vm.attempts, s.subject)
+    val branches = branchMastery(vm.sheets, vm.attempts, s.subject)
     val speed = speedOf(a)
     val weak = topicSlices(s, a).filter { it.answered > 0 }.sortedBy { it.percent }.take(3)
 

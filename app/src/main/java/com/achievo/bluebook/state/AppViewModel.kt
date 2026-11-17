@@ -7,6 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.achievo.bluebook.data.*
+import com.achievo.bluebook.data.remote.AttemptRepository
+import com.achievo.bluebook.data.remote.CatalogRepository
+import com.achievo.bluebook.data.remote.toUserMessage
 import io.github.jan.supabase.auth.auth
 import java.util.UUID
 import kotlinx.coroutines.launch
@@ -35,6 +38,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var authError by mutableStateOf<String?>(null)
         private set
 
+    // ---- catalogue (v_sheet_catalog / v_sheet_items, replaces SampleData.kt) ----
+    var sheets by mutableStateOf<List<Sheet>>(emptyList())
+        private set
+    var catalogLoading by mutableStateOf(false)
+        private set
+    var catalogError by mutableStateOf<String?>(null)
+        private set
+
     init {
         if (privacyAccepted) ensureSession()
     }
@@ -44,15 +55,29 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         authPhase = AuthPhase.SIGNING_IN
         viewModelScope.launch {
             AuthRepository.ensureSession(store)
-                .onSuccess { authPhase = AuthPhase.READY }
+                .onSuccess { authPhase = AuthPhase.READY; loadCatalog() }
                 .onFailure {
                     authPhase = AuthPhase.OFFLINE
-                    authError = it.message
+                    authError = it.toUserMessage("Couldn't sign in.")
                 }
         }
     }
 
-    fun sheet(id: String): Sheet? = SampleData.sheets.firstOrNull { it.id == id }
+    fun loadCatalog() {
+        if (catalogLoading) return
+        catalogLoading = true
+        catalogError = null
+        viewModelScope.launch {
+            runCatching { CatalogRepository.loadSheets() }
+                .onSuccess { sheets = it }
+                .onFailure { catalogError = it.toUserMessage("Couldn't load the exam set catalogue.") }
+            catalogLoading = false
+        }
+    }
+
+    fun dismissCatalogError() { catalogError = null }
+
+    fun sheet(id: String): Sheet? = sheets.firstOrNull { it.id == id }
     fun attempt(id: String): Attempt? = attempts.firstOrNull { it.id == id }
 
     // ---- answer sheet (FR06 to FR09) ----
@@ -64,7 +89,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             itemSeconds = List(s.itemCount) { 0 },
             elapsedSeconds = 0,
             lastMarkSeconds = 0,
-            startedAt = System.currentTimeMillis()
+            startedAt = System.currentTimeMillis(),
+            attemptId = UUID.randomUUID().toString()
         )
         draft = d
         store.saveDraft(d)
@@ -106,35 +132,38 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         store.saveDraft(null)
     }
 
-    /**
-     * Submitted attempts are final (FR09). Scored locally from the sample key for now — a
-     * bridge until submit_attempt() takes over (Step 4), at which point the key leaves the
-     * client entirely and this becomes a server round-trip instead.
-     * TODO: record answer key version (BR06) once keys are versioned.
-     */
-    fun submit(): String? {
-        val d = draft ?: return null
-        val key = sheet(d.sheetId)?.key
-        val outcomes = key?.let { k ->
-            d.answers.mapIndexed { i, ans -> if (ans == null) ItemOutcome.BLANK else if (ans == k.getOrNull(i)) ItemOutcome.CORRECT else ItemOutcome.WRONG }
+    // ---- submit (FR09): scored server-side via submit_attempt(), the only place the key is read ----
+    var submitLoading by mutableStateOf(false)
+        private set
+    var submitError by mutableStateOf<String?>(null)
+        private set
+    var submittedAttemptId by mutableStateOf<String?>(null)
+        private set
+
+    /** On failure the draft is kept intact (not cleared) so the student's answers are never lost. */
+    fun submit() {
+        val d = draft ?: return
+        val sheet = sheet(d.sheetId) ?: return
+        if (submitLoading) return
+        submitLoading = true
+        submitError = null
+        viewModelScope.launch {
+            runCatching { AttemptRepository.submit(sheet.id, d) }
+                .onSuccess { a ->
+                    val scored = a.copy(keyVersionId = sheet.keyVersionId)
+                    attempts = attempts + scored
+                    store.saveAttempts(attempts)
+                    draft = null
+                    store.saveDraft(null)
+                    submittedAttemptId = scored.id
+                }
+                .onFailure { submitError = it.toUserMessage("Couldn't submit — your answers are saved. Try again.") }
+            submitLoading = false
         }
-        val a = Attempt(
-            id = UUID.randomUUID().toString(),
-            sheetId = d.sheetId,
-            answers = d.answers,
-            flagged = d.flagged,
-            itemSeconds = d.itemSeconds,
-            totalSeconds = d.elapsedSeconds,
-            submittedAt = System.currentTimeMillis(),
-            outcomes = outcomes,
-            correctLetters = key
-        )
-        attempts = attempts + a
-        store.saveAttempts(attempts)
-        draft = null
-        store.saveDraft(null)
-        return a.id
     }
+
+    fun dismissSubmitError() { submitError = null }
+    fun consumeSubmittedAttempt() { submittedAttemptId = null }
 
     // ---- profile, privacy, settings ----
     fun saveProfile(p: Profile) { profile = p; store.saveProfile(p) }

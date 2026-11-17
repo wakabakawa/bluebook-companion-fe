@@ -20,10 +20,10 @@ data class Sheet(
     val branch: String,
     val itemCount: Int,
     val allotmentSeconds: Int,
-    val key: List<Char>?,
-    val tags: List<ItemTag>?
+    val tags: List<ItemTag>?,
+    val published: Boolean,
+    val keyVersionId: String? = null
 ) {
-    val published: Boolean get() = key != null && tags != null
     val title: String get() = "$branch: $setName"
 }
 
@@ -34,7 +34,9 @@ data class Draft(
     val itemSeconds: List<Int>,
     val elapsedSeconds: Int,
     val lastMarkSeconds: Int,
-    val startedAt: Long
+    val startedAt: Long,
+    /** Client-generated, stable for the life of this draft so a failed-then-retried submit_attempt() call is idempotent. */
+    val attemptId: String
 )
 
 enum class ItemOutcome { CORRECT, WRONG, BLANK }

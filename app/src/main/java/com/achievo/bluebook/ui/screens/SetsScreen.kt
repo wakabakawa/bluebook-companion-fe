@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.achievo.bluebook.data.SampleData
 import com.achievo.bluebook.data.Sheet
 import com.achievo.bluebook.state.AppViewModel
 import com.achievo.bluebook.ui.components.*
@@ -63,14 +62,28 @@ fun SetsScreen(vm: AppViewModel, onOpenSheet: (String) -> Unit) {
         )
     }
 
+    vm.catalogError?.let { msg ->
+        NoticeDialog(
+            title = "COULDN'T LOAD SETS",
+            body = msg,
+            confirm = "Retry", onConfirm = { vm.dismissCatalogError(); vm.loadCatalog() },
+            dismiss = "Close", onDismiss = { vm.dismissCatalogError() }
+        )
+    }
+
     val back: (() -> Unit)? = if (selectedSet != null) ({ selectedSet = null }) else null
 
     Column(Modifier.fillMaxSize()) {
         BluebookTopBar(onBack = back)
         val set = selectedSet
-        if (set == null) {
+        if (vm.sheets.isEmpty()) {
+            Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                if (vm.catalogLoading) CircularProgressIndicator(color = Maroon)
+                else Text("No exam sets available yet.", color = Muted)
+            }
+        } else if (set == null) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                SampleData.setNames.forEach { name ->
+                vm.sheets.map { it.setName }.distinct().sorted().forEach { name ->
                     Box(
                         Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Maroon)
                             .clickable { selectedSet = name; expanded = null; query = "" }.padding(vertical = 18.dp),
@@ -91,7 +104,7 @@ fun SetsScreen(vm: AppViewModel, onOpenSheet: (String) -> Unit) {
                     Icon(Icons.Outlined.SwapVert, contentDescription = "Sort", tint = Maroon)
                 }
             }
-            val grouped = SampleData.sheets.filter { it.setName == set }.groupBy { it.subject }
+            val grouped = vm.sheets.filter { it.setName == set }.groupBy { it.subject }
                 .filter { (subject, list) ->
                     query.isBlank() || subject.contains(query, true) || list.any { it.branch.contains(query, true) }
                 }

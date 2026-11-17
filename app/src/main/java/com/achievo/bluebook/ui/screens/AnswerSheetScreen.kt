@@ -40,6 +40,19 @@ fun AnswerSheetScreen(
         return
     }
 
+    LaunchedEffect(vm.submittedAttemptId) {
+        vm.submittedAttemptId?.let { onSubmitted(it); vm.consumeSubmittedAttempt() }
+    }
+
+    vm.submitError?.let { msg ->
+        NoticeDialog(
+            title = "COULDN'T SUBMIT",
+            body = msg,
+            confirm = "Retry", onConfirm = { vm.dismissSubmitError(); vm.submit() },
+            dismiss = "Close", onDismiss = { vm.dismissSubmitError() }
+        )
+    }
+
     var showReminder by remember { mutableStateOf(!vm.reminderHidden) }
     var dontAsk by remember { mutableStateOf(false) }
     var showSubmit by remember { mutableStateOf(false) }
@@ -95,7 +108,7 @@ fun AnswerSheetScreen(
             onConfirm = {
                 showSubmit = false
                 submitted = true
-                vm.submit()?.let(onSubmitted)
+                vm.submit()
             },
             dismiss = "Back",
             onDismiss = { showSubmit = false }
@@ -140,8 +153,11 @@ fun AnswerSheetScreen(
             }
         }
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PrimaryButton("Save and Exit", { saveAndExit() }, Modifier.weight(1f))
-            PrimaryButton("Submit", { showSubmit = true }, Modifier.weight(1f))
+            PrimaryButton("Save and Exit", { saveAndExit() }, Modifier.weight(1f), enabled = !vm.submitLoading)
+            PrimaryButton(
+                if (vm.submitLoading) "Submitting…" else "Submit",
+                { showSubmit = true }, Modifier.weight(1f), enabled = !vm.submitLoading
+            )
         }
     }
 }

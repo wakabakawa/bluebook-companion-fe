@@ -105,6 +105,7 @@ private fun Draft.toJson() = JSONObject()
     .put("flagged", JSONArray(flagged.toList()))
     .put("itemSeconds", JSONArray(itemSeconds))
     .put("elapsed", elapsedSeconds).put("lastMark", lastMarkSeconds).put("startedAt", startedAt)
+    .put("attemptId", attemptId)
 
 private fun draftFrom(o: JSONObject) = Draft(
     sheetId = o.getString("sheetId"),
@@ -113,5 +114,6 @@ private fun draftFrom(o: JSONObject) = Draft(
     itemSeconds = o.getJSONArray("itemSeconds").ints(),
     elapsedSeconds = o.getInt("elapsed"),
     lastMarkSeconds = o.getInt("lastMark"),
-    startedAt = o.getLong("startedAt")
+    startedAt = o.getLong("startedAt"),
+    attemptId = o.getString("attemptId")
 )

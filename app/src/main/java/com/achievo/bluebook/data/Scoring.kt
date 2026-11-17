@@ -61,18 +61,18 @@ fun topicSlices(sheet: Sheet, a: Attempt): List<Slice> {
 }
 
 /** FR13: mastery per branch across ALL attempts of a subject. */
-fun branchMastery(attempts: List<Attempt>, subject: String): List<Slice> {
-    val branches = SampleData.sheets.filter { it.subject == subject }.map { it.branch }.distinct()
+fun branchMastery(sheets: List<Sheet>, attempts: List<Attempt>, subject: String): List<Slice> {
+    val branches = sheets.filter { it.subject == subject }.map { it.branch }.distinct()
     return branches.map { br ->
         var c = 0; var n = 0
         attempts.forEach { a ->
-            val s = SampleData.sheets.firstOrNull { it.id == a.sheetId }
-            val key = s?.key
-            if (s != null && key != null && s.subject == subject && s.branch == br) {
-                a.answers.forEachIndexed { i, ans ->
-                    if (ans != null) {
+            val s = sheets.firstOrNull { it.id == a.sheetId }
+            val outcomes = a.outcomes
+            if (s != null && outcomes != null && s.subject == subject && s.branch == br) {
+                outcomes.forEach { o ->
+                    if (o != ItemOutcome.BLANK) {
                         n++
-                        if (ans == key[i]) c++
+                        if (o == ItemOutcome.CORRECT) c++
                     }
                 }
             }
