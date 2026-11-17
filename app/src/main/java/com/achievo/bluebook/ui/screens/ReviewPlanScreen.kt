@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.sp
 import com.achievo.bluebook.data.AppConfig
 import com.achievo.bluebook.data.PlanStatus
 import com.achievo.bluebook.data.ReviewPlanEntry
-import com.achievo.bluebook.data.TopicStat
 import com.achievo.bluebook.state.AppViewModel
 import com.achievo.bluebook.ui.components.*
 import com.achievo.bluebook.ui.theme.*
@@ -96,7 +95,7 @@ fun ReviewPlanScreen(vm: AppViewModel, onBack: () -> Unit) {
                         AppCard(color = CardPink) {
                             Text("Your review plan:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             HorizontalDivider(color = Maroon, thickness = 3.dp, modifier = Modifier.padding(vertical = 6.dp))
-                            plan.entries.forEach { e -> PlanRow(e, vm.reviewTopics) }
+                            plan.entries.forEach { e -> PlanRow(e) }
                         }
                     }
                 }
@@ -127,14 +126,11 @@ private fun BudgetStepper(value: Int, onChange: (Int) -> Unit) {
 }
 
 @Composable
-private fun PlanRow(e: ReviewPlanEntry, topics: List<TopicStat>) {
-    val topic = topics.firstOrNull { it.topicId == e.topicId }
-    val label = topic?.let { "${it.branch}: ${it.topic}" } ?: e.topicId
-    val recency = topic?.daysSincePractice?.let { "last practised ${it}d ago" } ?: "not practised yet"
+private fun PlanRow(e: ReviewPlanEntry) {
+    val label = "${e.branchLabel}: ${e.topicLabel}"
     val caption = listOfNotNull(
-        topic?.bookPageRef?.let { "Pg $it" },
-        "${e.costMin} min",
-        recency
+        e.bookPageRef?.let { "Pg $it" },
+        "${e.costMin} min"
     ).joinToString(" | ")
 
     Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {

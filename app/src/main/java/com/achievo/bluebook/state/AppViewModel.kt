@@ -179,7 +179,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         examDate = null
         reviewPlan = null
         reviewPlanError = null
-        reviewTopics = emptyList()
         authPhase = AuthPhase.IDLE
         viewModelScope.launch {
             runCatching { Supa.client.auth.signOut() }
@@ -189,8 +188,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- review plan (FR21) ----
     var reviewBudgetMin by mutableStateOf(AppConfig.DEFAULT_BUDGET_MIN)
-        private set
-    var reviewTopics by mutableStateOf<List<TopicStat>>(emptyList())
         private set
     var reviewPlan by mutableStateOf<ReviewPlan?>(null)
         private set
@@ -207,11 +204,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (reviewPlanLoading) return
         reviewPlanLoading = true
         reviewPlanError = null
-        val topics = topicStats(attempts)
-        reviewTopics = topics
-        val profileId = store.cachedUserId() ?: UUID.randomUUID().toString()
         viewModelScope.launch {
-            ReviewPlanApi.solve(profileId, topics, reviewBudgetMin, AppConfig.DEFAULT_MIN_STRONG)
+            ReviewPlanApi.solve(reviewBudgetMin, AppConfig.DEFAULT_MIN_STRONG)
                 .onSuccess { reviewPlan = it }
                 .onFailure { reviewPlanError = it.message ?: "Couldn't build a review plan." }
             reviewPlanLoading = false

@@ -58,26 +58,16 @@ data class Attempt(
 
 data class Profile(val nickname: String = "", val school: String = "", val course: String = "")
 
-/** One topic's book-wide statistics as the review-plan optimizer needs them (FR21). */
-data class TopicStat(
-    val topicId: String,
-    val subject: String,
-    val branch: String,
-    val topic: String,
-    val itemsInBook: Int,
-    val answered: Int,
-    val correct: Int,
-    val daysSincePractice: Int?,
-    val refTimeSec: Int,
-    val bookPageRef: Int?
-)
-
 /** FR21 optimizer outcome. UNKNOWN keeps a newer server from crashing an older build. */
 enum class PlanStatus { OPTIMAL, OPTIMAL_RELAXED_Q, BUDGET_TOO_SMALL, EMPTY_INPUT, UNKNOWN }
 
+/** Label/page/staleness are echoed by plan-gateway itself, so the client never needs its own topic lookup. */
 data class ReviewPlanEntry(
     val rank: Int,
     val topicId: String,
+    val topicLabel: String,
+    val subjectLabel: String,
+    val branchLabel: String,
     val costMin: Int,
     val value: Double,
     val mastery: Double,
@@ -88,7 +78,7 @@ data class ReviewPlanEntry(
     val bookPageRef: Int?
 )
 
-/** One review plan from POST /api/v1/algorithm/solve (FR21). */
+/** One review plan from the plan-gateway Supabase Edge Function (FR21). */
 data class ReviewPlan(
     val requestId: String,
     val status: PlanStatus,
