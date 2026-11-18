@@ -34,14 +34,16 @@ fun AnswerSheetScreen(
     val draft = vm.draft
     var submitted by remember { mutableStateOf(false) }
 
+    // Must run even once submit() succeeds and clears the draft below — otherwise the early
+    // return never lets this screen navigate away, and it's left showing nothing (blank screen).
+    LaunchedEffect(vm.submittedAttemptId) {
+        vm.submittedAttemptId?.let { onSubmitted(it); vm.consumeSubmittedAttempt() }
+    }
+
     if (sheet == null || draft == null || draft.sheetId != sheetId) {
         // After submitting, the draft is cleared on purpose, so don't navigate back in that case.
         LaunchedEffect(submitted) { if (!submitted) onExit() }
         return
-    }
-
-    LaunchedEffect(vm.submittedAttemptId) {
-        vm.submittedAttemptId?.let { onSubmitted(it); vm.consumeSubmittedAttempt() }
     }
 
     vm.submitError?.let { msg ->
