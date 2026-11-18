@@ -6,10 +6,11 @@ schema, RLS, and deployment details.
 
 ## Open it
 1. Android Studio (Koala or newer), JDK 17.
-2. Copy `.env.sample` to `.env` (or `local.properties.sample` to `local.properties`) and fill in
-   `SUPABASE_ANON_KEY`. `SUPABASE_URL` already defaults to the shared project.
-3. File > Open > select this folder. Let Gradle sync (it downloads Gradle 8.7 from the wrapper properties).
-4. Run on an emulator or device, Android 8.0 (API 26) or higher.
+2. File > Open > select this folder. Let Gradle sync (it downloads Gradle 8.7 from the wrapper properties).
+   `SUPABASE_URL`/`SUPABASE_ANON_KEY` default to the shared project — no setup needed. To point
+   at a different one instead, copy `.env.sample` to `.env` (or `local.properties.sample` to
+   `local.properties`) and fill in the override.
+3. Run on an emulator or device, Android 8.0 (API 26) or higher.
 
 ## The core flow
 Splash > accept privacy notice (also triggers anonymous sign-in, FR04) > Answer Sheet tab > pick a

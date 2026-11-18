@@ -12,6 +12,7 @@ val localProps = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 val defaultSupabaseUrl = "https://idilswwvuyepojfcbpse.supabase.co"
+val defaultSupabaseAnonKey = "sb_publishable_UZj5a4pKI34UzBz95p4EFw_Mn7DiGLH"
 
 android {
     namespace = "com.achievo.bluebook"
@@ -26,7 +27,7 @@ android {
         versionName = "0.1.0"
 
         buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", defaultSupabaseUrl)}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", defaultSupabaseAnonKey)}\"")
     }
     buildTypes {
         release { isMinifyEnabled = false }
