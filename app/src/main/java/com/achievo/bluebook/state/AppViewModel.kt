@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.achievo.bluebook.data.*
 import com.achievo.bluebook.data.remote.AttemptRepository
 import com.achievo.bluebook.data.remote.CatalogRepository
+import com.achievo.bluebook.data.remote.CohortRepository
 import com.achievo.bluebook.data.remote.toUserMessage
 import io.github.jan.supabase.auth.auth
 import java.util.UUID
@@ -76,6 +77,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun dismissCatalogError() { catalogError = null }
+
+    /** Retries anonymous sign-in after an OFFLINE failure (FR04's silent sign-in otherwise has no recovery path). */
+    fun retrySignIn() = ensureSession()
 
     fun sheet(id: String): Sheet? = sheets.firstOrNull { it.id == id }
     fun attempt(id: String): Attempt? = attempts.firstOrNull { it.id == id }
@@ -212,4 +216,26 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun dismissReviewPlanError() { reviewPlanError = null }
+
+    // ---- cohort comparison (FR22), topic-level only — reads v_topic_stats directly ----
+    var cohortSlices by mutableStateOf<List<CohortSlice>>(emptyList())
+        private set
+    var cohortLoading by mutableStateOf(false)
+        private set
+    var cohortError by mutableStateOf<String?>(null)
+        private set
+
+    fun loadCohort() {
+        if (cohortLoading) return
+        cohortLoading = true
+        cohortError = null
+        viewModelScope.launch {
+            runCatching { CohortRepository.loadTopicStats() }
+                .onSuccess { cohortSlices = it }
+                .onFailure { cohortError = it.toUserMessage("Couldn't load the cohort comparison.") }
+            cohortLoading = false
+        }
+    }
+
+    fun dismissCohortError() { cohortError = null }
 }

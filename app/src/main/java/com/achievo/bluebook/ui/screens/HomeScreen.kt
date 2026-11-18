@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.achievo.bluebook.data.scoreOf
 import com.achievo.bluebook.data.topicSlices
 import com.achievo.bluebook.state.AppViewModel
+import com.achievo.bluebook.state.AuthPhase
 import com.achievo.bluebook.ui.components.*
 import com.achievo.bluebook.ui.theme.*
 import java.time.Instant
@@ -33,7 +34,8 @@ fun HomeScreen(
     onStartNew: () -> Unit,
     onContinue: (String) -> Unit,
     onOpenResult: (String) -> Unit,
-    onReviewPlan: () -> Unit
+    onReviewPlan: () -> Unit,
+    onEstimatedScore: () -> Unit
 ) {
     val activity = LocalContext.current as? Activity
     var showPicker by remember { mutableStateOf(false) }
@@ -45,6 +47,14 @@ fun HomeScreen(
             body = "ALL submissions are anonymous, and data will be handled in compliance with the Data Privacy Act of 2012!",
             confirm = "Agree", onConfirm = { vm.acceptPrivacy() },
             dismiss = "Exit", onDismiss = { activity?.finish() }
+        )
+    } else if (vm.authPhase == AuthPhase.OFFLINE) {
+        // Sign-in is silent (FR04) — without this, a failure here is invisible; the student would
+        // only ever see the downstream symptom (an empty/erroring catalogue), never the cause.
+        NoticeDialog(
+            title = "COULDN'T CONNECT",
+            body = vm.authError ?: "Couldn't sign in. Check your connection and try again.",
+            confirm = "Retry", onConfirm = { vm.retrySignIn() }
         )
     }
 
@@ -70,6 +80,9 @@ fun HomeScreen(
     val latestSheet = latest?.let { vm.sheet(it.sheetId) }
     val weak = if (latest != null && latestSheet != null) {
         topicSlices(latestSheet, latest).filter { it.answered > 0 }.sortedBy { it.percent }.take(3)
+    } else emptyList()
+    val strong = if (latest != null && latestSheet != null) {
+        topicSlices(latestSheet, latest).filter { it.answered > 0 }.sortedByDescending { it.percent }.take(3)
     } else emptyList()
 
     Column(Modifier.fillMaxSize()) {
@@ -131,30 +144,25 @@ fun HomeScreen(
                         dateText(latest.submittedAt), "${mmss(latest.totalSeconds)} mins"
                     ) { onOpenResult(latest.id) }
                 }
+                item {
+                    // FR20: a placeholder estimate (CC11) — see EstimatedScoreScreen for the disclaimer.
+                    AppCard(onClick = onEstimatedScore) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Estimated Entrance Test Score", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null, tint = Maroon)
+                        }
+                    }
+                }
             }
             if (weak.isNotEmpty() && latestSheet != null) {
                 item {
-                    AppCard(color = CardPink) {
-                        Text("Areas to improve:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        HorizontalDivider(color = Maroon, thickness = 3.dp, modifier = Modifier.padding(vertical = 6.dp))
-                        weak.forEachIndexed { i, s ->
-                            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text("${i + 1}.", color = Maroon, fontWeight = FontWeight.Bold)
-                                Spacer(Modifier.width(8.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text("${latestSheet.branch}: ${s.label}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                                    Text(listOfNotNull(latestSheet.setName, s.note).joinToString(" | "), fontSize = 11.sp, color = Muted)
-                                }
-                                Column(horizontalAlignment = Alignment.End) {
-                                    Text("${s.percent}%", color = Maroon, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                    Text("${s.correct}/${s.answered} items", fontSize = 11.sp, color = Muted)
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
+                    TopicRankCard("Areas to improve:", weak, latestSheet.branch, latestSheet.setName, CardPink, Maroon) {
                         OutlineButton("View Review Plan", onReviewPlan, Modifier.fillMaxWidth())
                     }
                 }
+            }
+            if (strong.isNotEmpty() && latestSheet != null) {
+                item { TopicRankCard("Your strengths:", strong, latestSheet.branch, latestSheet.setName, CorrectBg, CorrectGreen) }
             }
         }
     }

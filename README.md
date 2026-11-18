@@ -21,17 +21,18 @@ Unpublished sets show "No published answer key yet" on purpose (FR05).
 ## Where things are
 - `data/remote/CatalogRepository.kt`  exam set catalogue + item tags, read from `v_sheet_catalog`/`v_sheet_items` (Postgrest). Replaces the old hardcoded sample data.
 - `data/remote/AttemptRepository.kt`  submits an attempt via the `submit_attempt()` RPC — the only place the answer key is read; it never reaches this client.
+- `data/remote/CohortRepository.kt`   topic-level Anonymous Cohort Comparison (FR22), read directly from `v_topic_stats` — no new backend surface needed.
 - `data/remote/SupabaseErrors.kt`     turns a `RestException` into a safe user-facing message (never surfaces `.message`, which embeds the request's raw headers/bearer token).
 - `data/SupabaseClient.kt`            the shared `SupabaseClient` (Auth, Postgrest, Functions).
 - `data/AuthRepository.kt`            anonymous sign-in, gated on the privacy notice (FR04).
-- `data/AppConfig.kt`                 client-pending thresholds (CC03 reference time, CC04 minimum items, FR21 budget defaults). Never hardcode these in screens.
-- `data/Scoring.kt`                   scoring, difficulty, topic, branch mastery, and speed split — all read from `Attempt.outcomes`/`correctLetters`, not a client-held key. Pure functions: easy to test against a manually scored sheet.
+- `data/AppConfig.kt`                 client-pending thresholds (CC03 reference time, CC04 minimum items, CC11 estimated-score band, FR21 budget defaults). Never hardcode these in screens.
+- `data/Scoring.kt`                   scoring, difficulty, cognitive skill, subject/branch/topic/key-concept mastery, progress over time, speed split, estimated score, and cohort standing — all read from `Attempt.outcomes`/`correctLetters`, not a client-held key. Pure functions: easy to test against a manually scored sheet.
 - `data/LocalStore.kt`                on-device save/resume, attempt history, profile, a cache of the Supabase-issued user id (never the source of truth).
 - `data/ReviewPlanApi.kt`             FR21's one Edge Function call (`plan-gateway`, via `functions-kt`). The request carries only the budget/strong-topic tuning — the server builds the topic stats itself from the caller's own history.
 - `state/AppViewModel.kt`             single source of UI state: auth phase, catalogue, submit, and review-plan loading/error states.
 - `ui/theme/`                         colors and theme. Colors are estimated from the screens: copy exact values from Figma.
 - `ui/components/`                    reusable pieces (answer rows, cards, bars, dialogs).
-- `ui/screens/`                       one file per screen group; `ReviewPlanScreen.kt` is FR21's screen.
+- `ui/screens/`                       one file per screen group; `ReviewPlanScreen.kt` is FR21's screen, `CohortComparisonScreen.kt` is FR22's, `EstimatedScoreScreen.kt` is FR20's.
 
 ## Offline scope
 Browsing the catalogue and taking an answer sheet (including the in-progress draft, which stays
@@ -42,7 +43,10 @@ a Retry dialog.
 
 ## Known gaps
 - Logo/branding images (placeholders in text), Inter font, exact hex values.
-- Not built, not designed: Cognitive Skill analysis (FR15), Progress Over Time (FR19), Estimated Score (FR20),
-  Cohort Comparison (FR22), jump-to-item (FR06).
+- Not built, not designed: jump-to-item (FR06), item-level (as opposed to topic-level) Cohort
+  Comparison (FR22) — would need a new published `item_cohort` projection, deliberately deferred.
+- Estimated Entrance Test Score (FR20) ships as a labeled placeholder (CC11): Achievo hasn't
+  supplied real passing-score cutoffs per program/exam yet, so the band/gap shown are defaults,
+  not real predictions.
 - Exam Date card exists in the design but not in any requirement or user story.
 - Terms and Conditions text is a placeholder.

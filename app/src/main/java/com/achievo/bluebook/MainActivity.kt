@@ -1,5 +1,6 @@
 package com.achievo.bluebook
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,7 +57,8 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     onStartNew = { goTab("sets") },
                     onContinue = { nav.navigate("sheet/$it") },
                     onOpenResult = { nav.navigate("result/$it") },
-                    onReviewPlan = { nav.navigate("reviewplan") }
+                    onReviewPlan = { nav.navigate("reviewplan") },
+                    onEstimatedScore = { nav.navigate("estimatedscore") }
                 )
             }
             composable("sets") { SetsScreen(vm) { nav.navigate("sheet/$it") } }
@@ -90,11 +92,16 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                 MasteryScreen(
                     vm, e.arguments?.getString("id") ?: "",
                     onReviewPlan = { nav.navigate("reviewplan") },
+                    onCohortComparison = { subject -> nav.navigate("cohort/${Uri.encode(subject)}") },
                     onBack = { nav.popBackStack() }
                 )
             }
             composable("review/{id}") { e -> ReviewScreen(vm, e.arguments?.getString("id") ?: "") { nav.popBackStack() } }
             composable("reviewplan") { ReviewPlanScreen(vm) { nav.popBackStack() } }
+            composable("cohort/{subject}") { e ->
+                CohortComparisonScreen(vm, e.arguments?.getString("subject") ?: "") { nav.popBackStack() }
+            }
+            composable("estimatedscore") { EstimatedScoreScreen(vm) { nav.popBackStack() } }
         }
     }
 }

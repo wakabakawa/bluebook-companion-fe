@@ -31,8 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.horizontalScroll
+import com.achievo.bluebook.data.ProgressPoint
 import com.achievo.bluebook.data.ScoreResult
 import com.achievo.bluebook.data.Sheet
+import com.achievo.bluebook.data.Slice
 import com.achievo.bluebook.ui.theme.*
 
 // ---------------------------------------------------------------- chrome
@@ -159,6 +162,40 @@ fun ResultSummaryCard(sheet: Sheet, score: ScoreResult, dateLabel: String, timeL
     }
 }
 
+/** Ranked weak/strong topic list, e.g. "Areas to improve" / "Your strengths" (FR13, FR18, used
+ *  on Home and Mastery). [branch] prefixes each row's label when set (Home shows it across
+ *  different sheets; Mastery already scopes to one sheet so omits it). */
+@Composable
+fun TopicRankCard(
+    title: String,
+    entries: List<Slice>,
+    branch: String?,
+    setName: String,
+    cardColor: Color,
+    accentColor: Color,
+    footer: (@Composable () -> Unit)? = null
+) {
+    AppCard(color = cardColor, modifier = Modifier.padding(top = 8.dp)) {
+        Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        HorizontalDivider(color = accentColor, thickness = 3.dp, modifier = Modifier.padding(vertical = 6.dp))
+        entries.forEachIndexed { i, t ->
+            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("${i + 1}.", color = accentColor, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(8.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(if (branch != null) "$branch: ${t.label}" else t.label, fontWeight = FontWeight.SemiBold)
+                    Text(listOfNotNull(setName, t.note).joinToString(" | "), fontSize = 11.sp, color = Muted)
+                }
+                Text("${t.percent}%  (${t.correct}/${t.answered})", color = accentColor, fontWeight = FontWeight.Bold)
+            }
+        }
+        if (footer != null) {
+            Spacer(Modifier.height(8.dp))
+            footer()
+        }
+    }
+}
+
 /** Bar with "Based on N items" (NFR07: every figure states its basis). percent == null draws an empty bar. */
 @Composable
 fun LabeledBar(label: String, percent: Int?, caption: String, color: Color) {
@@ -174,6 +211,31 @@ fun LabeledBar(label: String, percent: Int?, caption: String, color: Color) {
             trackColor = TrackGray
         )
         Text(caption, fontSize = 12.sp, color = Muted)
+    }
+}
+
+/** FR19: a topic's percent-correct across attempts, oldest first. Textual by design — proportionate
+ *  to the rest of this screen's number-forward style, not a plotted chart. */
+@Composable
+fun ProgressTrendRow(topic: String, points: List<ProgressPoint>) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(topic, fontWeight = FontWeight.SemiBold)
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            points.forEachIndexed { i, p ->
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val pct = p.slice.percent
+                    Text(
+                        "$pct%", fontFamily = Mono, fontWeight = FontWeight.Bold,
+                        color = if (pct >= 70) CorrectGreen else if (pct >= 40) FlagAmber else WrongRed
+                    )
+                    Text("Attempt ${i + 1}", fontSize = 10.sp, color = Muted)
+                    Text(dateText(p.submittedAt), fontSize = 10.sp, color = Muted)
+                }
+            }
+        }
     }
 }
 

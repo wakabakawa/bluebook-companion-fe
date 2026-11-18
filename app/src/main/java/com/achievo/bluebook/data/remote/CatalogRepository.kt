@@ -26,7 +26,8 @@ private data class ItemRow(
     val key_concept: String?,
     val cognitive_skill: String?,
     val difficulty: String,
-    val book_page: Int?
+    val book_page: Int?,
+    val ref_seconds: Int
 )
 
 /** Replaces SampleData.kt's hardcoded catalogue (v_sheet_catalog / v_sheet_items, FR05). */
@@ -58,5 +59,6 @@ private fun ItemRow.toItemTag(subject: String, branch: String) = ItemTag(
     keyConcept = key_concept ?: "",
     cognitiveSkill = cognitive_skill ?: "",
     difficulty = Difficulty.entries.first { it.label == difficulty },
-    bookPage = book_page
+    bookPage = book_page,
+    refSeconds = ref_seconds
 )

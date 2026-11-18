@@ -72,15 +72,25 @@ fun ResultScreen(
         return
     }
     val score = scoreOf(a)
-    val slices = difficultySlices(s, a)
-    val colors = listOf(CorrectGreen, FlagAmber, WrongRed)
+    val diffSlices = difficultySlices(s, a)
+    val skillSlices = cognitiveSkillSlices(s, a)
+    val diffColors = listOf(CorrectGreen, FlagAmber, WrongRed)
+    // Cyclic, not positional-semantic like diffColors — cognitive skill has no fixed cardinality
+    // or easy/hard ordering, just distinct identity.
+    val skillColors = listOf(SelectBlue, CorrectGreen, FlagAmber, WrongRed, Muted)
     Column(Modifier.fillMaxSize()) {
         BluebookTopBar(onBack = onBack)
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item { ResultSummaryCard(s, score, dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") }
-            item { Spacer(Modifier.height(4.dp)) }
-            itemsIndexed(slices) { i, sl ->
-                LabeledBar(sl.label, if (sl.answered == 0) null else sl.percent, "Based on ${sl.answered} items..", colors[i])
+            item { Text("By difficulty", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp)) }
+            itemsIndexed(diffSlices) { i, sl ->
+                LabeledBar(sl.label, if (sl.answered == 0) null else sl.percent, "Based on ${sl.answered} items..", diffColors[i])
+            }
+            if (skillSlices.isNotEmpty()) {
+                item { Text("By cognitive skill", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
+                itemsIndexed(skillSlices) { i, sl ->
+                    LabeledBar(sl.label, if (sl.answered == 0) null else sl.percent, "Based on ${sl.answered} items..", skillColors[i % skillColors.size])
+                }
             }
             item {
                 Spacer(Modifier.height(8.dp))
@@ -97,9 +107,31 @@ fun ResultScreen(
     }
 }
 
-/** Mastery per branch (all attempts), speed split, and weak topics with book pages (FR13, FR17, FR18, FR21). */
+/** A mastery bar that falls back to "Too little data!" below BR08's minimum, used for every
+ *  granularity (subject/branch/key concept) that shares this exact reliability gating. */
 @Composable
-fun MasteryScreen(vm: AppViewModel, attemptId: String, onReviewPlan: () -> Unit, onBack: () -> Unit) {
+private fun MasteryBar(slice: Slice) {
+    if (slice.reliable) {
+        LabeledBar(
+            slice.label, slice.percent, "Based on ${slice.answered} items..",
+            if (slice.percent >= 70) CorrectGreen else if (slice.percent >= 40) FlagAmber else WrongRed
+        )
+    } else {
+        // BR08: below the minimum, say so instead of showing a number
+        LabeledBar(slice.label, null, if (slice.answered == 0) "Too little data!" else "Too little data! (${slice.answered} answered)", Muted)
+    }
+}
+
+/** Mastery per subject/branch/key-concept (all attempts), speed split, progress over time, and
+ *  weak/strong topics with book pages (FR13, FR15, FR17, FR18, FR19, FR21). */
+@Composable
+fun MasteryScreen(
+    vm: AppViewModel,
+    attemptId: String,
+    onReviewPlan: () -> Unit,
+    onCohortComparison: (String) -> Unit,
+    onBack: () -> Unit
+) {
     val a = vm.attempt(attemptId)
     val s = a?.let { vm.sheet(it.sheetId) }
     if (a == null || s == null) {
@@ -107,22 +139,27 @@ fun MasteryScreen(vm: AppViewModel, attemptId: String, onReviewPlan: () -> Unit,
         return
     }
     val score = scoreOf(a)
+    val subjectSlice = subjectMastery(vm.sheets, vm.attempts, s.subject)
     val branches = branchMastery(vm.sheets, vm.attempts, s.subject)
-    val speed = speedOf(a)
+    val keyConcepts = keyConceptMastery(vm.sheets, vm.attempts, s.subject)
+    val speed = speedOf(a, s.tags)
     val weak = topicSlices(s, a).filter { it.answered > 0 }.sortedBy { it.percent }.take(3)
+    val strong = topicSlices(s, a).filter { it.answered > 0 }.sortedByDescending { it.percent }.take(3)
+    val topicsOnSheet = (s.tags ?: emptyList()).map { it.topic }.distinct()
+    val trends = topicsOnSheet
+        .map { topic -> topic to topicProgress(vm.sheets, vm.attempts, topic) }
+        .filter { (_, pts) -> pts.size >= 2 }
 
     Column(Modifier.fillMaxSize()) {
         BluebookTopBar(onBack = onBack)
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item { ResultSummaryCard(s, score, dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") }
             item { Text("${s.subject} mastery", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
-            items(branches) { b ->
-                if (b.reliable) {
-                    LabeledBar(b.label, b.percent, "Based on ${b.answered} items..", if (b.percent >= 70) CorrectGreen else if (b.percent >= 40) FlagAmber else WrongRed)
-                } else {
-                    // BR08: below the minimum, say so instead of showing a number
-                    LabeledBar(b.label, null, if (b.answered == 0) "Too little data!" else "Too little data! (${b.answered} answered)", Muted)
-                }
+            item { MasteryBar(subjectSlice) }
+            items(branches) { b -> MasteryBar(b) }
+            if (keyConcepts.isNotEmpty()) {
+                item { Text("Key concepts", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
+                items(keyConcepts) { kc -> MasteryBar(kc) }
             }
             item { Text("Answering speed", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
             item {
@@ -148,34 +185,38 @@ fun MasteryScreen(vm: AppViewModel, attemptId: String, onReviewPlan: () -> Unit,
                                 }
                             }
                         }
-                        // FR17: state that a default reference time was applied (CC03 pending)
+                        // FR17: per-item reference time (CC03), falling back to the flat default only if untagged
                         Text(
-                            "Average ${speed.avgSeconds}s per item. Fast means ${AppConfig.REFERENCE_SECONDS}s or less (default reference time).",
+                            "Average ${speed.avgSeconds}s per item. Fast means at or under each item's own " +
+                                "reference time (by difficulty), falling back to ${AppConfig.REFERENCE_SECONDS}s only if untagged.",
                             fontSize = 11.sp, color = Muted
                         )
                     }
                 }
             }
+            if (trends.isNotEmpty()) {
+                item { Text("Progress Over Time", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        trends.forEach { (topic, pts) -> ProgressTrendRow(topic, pts) }
+                    }
+                }
+            }
             if (weak.isNotEmpty()) {
                 item {
-                    AppCard(color = CardPink, modifier = Modifier.padding(top = 8.dp)) {
-                        Text("Areas to improve:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        HorizontalDivider(color = Maroon, thickness = 3.dp, modifier = Modifier.padding(vertical = 6.dp))
-                        weak.forEachIndexed { i, t ->
-                            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text("${i + 1}.", color = Maroon, fontWeight = FontWeight.Bold)
-                                Spacer(Modifier.width(8.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(t.label, fontWeight = FontWeight.SemiBold)
-                                    Text(listOfNotNull(s.setName, t.note).joinToString(" | "), fontSize = 11.sp, color = Muted)
-                                }
-                                Text("${t.percent}%  (${t.correct}/${t.answered})", color = Maroon, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
+                    TopicRankCard("Areas to improve:", weak, null, s.setName, CardPink, Maroon) {
                         OutlineButton("View Review Plan", onReviewPlan, Modifier.fillMaxWidth())
                     }
                 }
+            }
+            if (strong.isNotEmpty()) {
+                item { TopicRankCard("Your strengths:", strong, null, s.setName, CorrectBg, CorrectGreen) }
+            }
+            item {
+                OutlineButton(
+                    "Compare with other readers", { onCohortComparison(s.subject) },
+                    Modifier.fillMaxWidth().padding(top = 8.dp)
+                )
             }
         }
     }
