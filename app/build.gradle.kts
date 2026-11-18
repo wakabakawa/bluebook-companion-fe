@@ -7,12 +7,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-// Not committed (see .gitignore) — copy local.properties.sample and fill in your own
-// Supabase project's URL/anon key. Empty defaults so a clean clone still builds.
 val localProps = Properties().apply {
-    val f = rootProject.file("local.properties")
-    if (f.exists()) f.inputStream().use { load(it) }
+    rootProject.file(".env").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
+val defaultSupabaseUrl = "https://idilswwvuyepojfcbpse.supabase.co"
 
 android {
     namespace = "com.achievo.bluebook"
@@ -26,7 +25,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
-        buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", defaultSupabaseUrl)}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
     }
     buildTypes {

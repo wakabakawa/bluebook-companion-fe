@@ -1,4 +1,5 @@
-# Copy this to local.properties (gitignored) and fill in your own values.
+# Copy to local.properties (gitignored) and fill in SUPABASE_ANON_KEY.
 sdk.dir=/path/to/Android/Sdk
-SUPABASE_URL=https://idilswwvuyepojfcbpse.supabase.co
+# SUPABASE_URL defaults to the shared project; uncomment to override.
+# SUPABASE_URL=https://idilswwvuyepojfcbpse.supabase.co
 SUPABASE_ANON_KEY=sb_publishable_...

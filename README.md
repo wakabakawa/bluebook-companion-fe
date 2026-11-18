@@ -6,8 +6,8 @@ schema, RLS, and deployment details.
 
 ## Open it
 1. Android Studio (Koala or newer), JDK 17.
-2. Copy `local.properties.sample` to `local.properties` and fill in `SUPABASE_URL`/`SUPABASE_ANON_KEY`
-   from the target Supabase project (local dev stack or the deployed remote project).
+2. Copy `.env.sample` to `.env` (or `local.properties.sample` to `local.properties`) and fill in
+   `SUPABASE_ANON_KEY`. `SUPABASE_URL` already defaults to the shared project.
 3. File > Open > select this folder. Let Gradle sync (it downloads Gradle 8.7 from the wrapper properties).
 4. Run on an emulator or device, Android 8.0 (API 26) or higher.
 
