@@ -11,8 +11,8 @@ val localProps = Properties().apply {
     rootProject.file(".env").takeIf { it.exists() }?.inputStream()?.use { load(it) }
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
-val defaultSupabaseUrl = "https://idilswwvuyepojfcbpse.supabase.co"
-val defaultSupabaseAnonKey = "sb_publishable_UZj5a4pKI34UzBz95p4EFw_Mn7DiGLH"
+val defaultSupabaseUrl = "https://fkfudgxxxnxmvoycbopc.supabase.co"
+val defaultSupabaseAnonKey = "sb_publishable_WpfqBb2C7boLXV8LdfqGqw__3yqqxuh"
 
 android {
     namespace = "com.achievo.bluebook"
