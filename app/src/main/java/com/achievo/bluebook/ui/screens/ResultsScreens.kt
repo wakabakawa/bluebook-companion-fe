@@ -62,7 +62,6 @@ fun ResultScreen(
     attemptId: String,
     onBack: () -> Unit,
     onAnalysis: () -> Unit,
-    onKey: () -> Unit,
     onRetake: (Sheet) -> Unit
 ) {
     val a = vm.attempt(attemptId)
@@ -94,10 +93,7 @@ fun ResultScreen(
             }
             item {
                 Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    PrimaryButton("Analysis", onAnalysis, Modifier.weight(1f))
-                    PrimaryButton("Answer Key", onKey, Modifier.weight(1f))
-                }
+                PrimaryButton("Analysis", onAnalysis, Modifier.fillMaxWidth())
             }
             item {
                 // FR09: a retake is a NEW attempt; the submitted one is never edited.

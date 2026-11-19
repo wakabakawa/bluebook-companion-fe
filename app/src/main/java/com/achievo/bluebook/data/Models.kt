@@ -52,8 +52,6 @@ data class Attempt(
     val submittedAt: Long,
     /** null = not yet scored. Scored locally (bridge) until server-side scoring (submit_attempt RPC) lands. */
     val outcomes: List<ItemOutcome>? = null,
-    /** null = key not available/revealed for this attempt. */
-    val correctLetters: List<Char>? = null,
     val keyVersionId: String? = null
 )
 

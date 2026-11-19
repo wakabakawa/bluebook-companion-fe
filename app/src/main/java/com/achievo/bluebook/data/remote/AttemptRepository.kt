@@ -28,7 +28,6 @@ private data class ResultRow(
     val position: Int,
     val selected_choice: String?,
     val is_correct: Boolean,
-    val correct_choice: String?,
     val key_version_id: String?
 )
 
@@ -48,7 +47,6 @@ object AttemptRepository {
         val rows = Supa.client.postgrest.rpc("submit_attempt", paramsJson).decodeList<ResultRow>()
 
         val outcomes = rows.map { if (it.selected_choice == null) ItemOutcome.BLANK else if (it.is_correct) ItemOutcome.CORRECT else ItemOutcome.WRONG }
-        val correctLetters = if (rows.all { it.correct_choice != null }) rows.map { it.correct_choice!!.first() } else null
 
         return Attempt(
             id = draft.attemptId,
@@ -59,7 +57,6 @@ object AttemptRepository {
             totalSeconds = draft.elapsedSeconds,
             submittedAt = System.currentTimeMillis(),
             outcomes = outcomes,
-            correctLetters = correctLetters,
             keyVersionId = rows.firstOrNull()?.key_version_id
         )
     }

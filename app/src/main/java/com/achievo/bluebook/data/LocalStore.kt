@@ -83,7 +83,6 @@ private fun Attempt.toJson() = JSONObject()
     .put("itemSeconds", JSONArray(itemSeconds))
     .put("totalSeconds", totalSeconds).put("submittedAt", submittedAt)
     .put("outcomes", outcomes?.let { JSONArray(it.map { o -> o.name }) } ?: JSONObject.NULL)
-    .put("correctLetters", correctLetters?.map { it as Char? }?.toJsonArr() ?: JSONObject.NULL)
     .put("keyVersionId", keyVersionId ?: JSONObject.NULL)
 
 private fun attemptFrom(o: JSONObject) = Attempt(
@@ -95,7 +94,6 @@ private fun attemptFrom(o: JSONObject) = Attempt(
     totalSeconds = o.getInt("totalSeconds"),
     submittedAt = o.getLong("submittedAt"),
     outcomes = o.optJSONArray("outcomes")?.let { arr -> List(arr.length()) { ItemOutcome.valueOf(arr.getString(it)) } },
-    correctLetters = o.optJSONArray("correctLetters")?.chars()?.map { it!! },
     keyVersionId = if (o.isNull("keyVersionId")) null else o.optString("keyVersionId", null)
 )
 

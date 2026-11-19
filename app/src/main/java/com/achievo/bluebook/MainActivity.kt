@@ -81,7 +81,6 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     vm, id,
                     onBack = { nav.popBackStack() },
                     onAnalysis = { nav.navigate("mastery/$id") },
-                    onKey = { nav.navigate("review/$id") },
                     onRetake = { sheet ->
                         vm.startSheet(sheet)
                         nav.navigate("sheet/${sheet.id}")
@@ -96,7 +95,6 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     onBack = { nav.popBackStack() }
                 )
             }
-            composable("review/{id}") { e -> ReviewScreen(vm, e.arguments?.getString("id") ?: "") { nav.popBackStack() } }
             composable("reviewplan") { ReviewPlanScreen(vm) { nav.popBackStack() } }
             composable("cohort/{subject}") { e ->
                 CohortComparisonScreen(vm, e.arguments?.getString("subject") ?: "") { nav.popBackStack() }

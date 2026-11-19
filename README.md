@@ -15,8 +15,9 @@ schema, RLS, and deployment details.
 ## The core flow
 Splash > accept privacy notice (also triggers anonymous sign-in, FR04) > Answer Sheet tab > pick a
 published exam set > Answer, flag, Save and Exit > Home shows "Continue?" > Submit (scored
-server-side via `submit_attempt()`, SEC-08/09/11) > Results > Analysis / Answer Key > Review Plan
-(FR21, via the `plan-gateway` Edge Function).
+server-side via `submit_attempt()`, SEC-08/09/11) > Results > Analysis > Review Plan
+(FR21, via the `plan-gateway` Edge Function). The correct answer is never shown to the student,
+not even for items they already answered (SEC-11).
 Unpublished sets show "No published answer key yet" on purpose (FR05).
 
 ## Where things are
@@ -27,7 +28,7 @@ Unpublished sets show "No published answer key yet" on purpose (FR05).
 - `data/SupabaseClient.kt`            the shared `SupabaseClient` (Auth, Postgrest, Functions).
 - `data/AuthRepository.kt`            anonymous sign-in, gated on the privacy notice (FR04).
 - `data/AppConfig.kt`                 client-pending thresholds (CC03 reference time, CC04 minimum items, CC11 estimated-score band, FR21 budget defaults). Never hardcode these in screens.
-- `data/Scoring.kt`                   scoring, difficulty, cognitive skill, subject/branch/topic/key-concept mastery, progress over time, speed split, estimated score, and cohort standing — all read from `Attempt.outcomes`/`correctLetters`, not a client-held key. Pure functions: easy to test against a manually scored sheet.
+- `data/Scoring.kt`                   scoring, difficulty, cognitive skill, subject/branch/topic/key-concept mastery, progress over time, speed split, estimated score, and cohort standing — all read from `Attempt.outcomes`, never from a client-held key. Pure functions: easy to test against a manually scored sheet.
 - `data/LocalStore.kt`                on-device save/resume, attempt history, profile, a cache of the Supabase-issued user id (never the source of truth).
 - `data/ReviewPlanApi.kt`             FR21's one Edge Function call (`plan-gateway`, via `functions-kt`). The request carries only the budget/strong-topic tuning — the server builds the topic stats itself from the caller's own history.
 - `state/AppViewModel.kt`             single source of UI state: auth phase, catalogue, submit, and review-plan loading/error states.

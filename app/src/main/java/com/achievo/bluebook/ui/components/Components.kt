@@ -10,8 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Home
@@ -246,8 +244,7 @@ fun Bubble(
     letter: Char,
     filled: Boolean,
     fill: Color = SelectBlue,
-    onClick: (() -> Unit)? = null,
-    badge: Pair<ImageVector, Color>? = null
+    onClick: (() -> Unit)? = null
 ) {
     Box(
         Modifier.size(44.dp)   // NFR07: tap target big enough for rapid selection
@@ -258,14 +255,6 @@ fun Bubble(
         contentAlignment = Alignment.Center
     ) {
         Text(letter.toString(), color = if (filled) Color.White else BubbleOutline, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        if (badge != null) {
-            Box(
-                Modifier.align(Alignment.BottomEnd).size(16.dp).clip(CircleShape)
-                    .background(badge.second).border(1.dp, Color.White, CircleShape)
-            ) {
-                Icon(badge.first, contentDescription = null, tint = Color.White, modifier = Modifier.size(11.dp).align(Alignment.Center))
-            }
-        }
     }
 }
 
@@ -290,44 +279,6 @@ fun AnswerInputRow(number: Int, selected: Char?, flagged: Boolean, onPick: (Char
                 tint = FlagAmber
             )
         }
-    }
-}
-
-/** Review row (FR11). The tag line is an addition to the design: FR11 requires tags and the book page. */
-@Composable
-fun AnswerReviewRow(number: Int, chosen: Char?, correct: Char, flagged: Boolean, tagLine: String) {
-    val shape = RoundedCornerShape(14.dp)
-    val tone = when {
-        chosen == null -> FlagAmber
-        chosen == correct -> CorrectGreen
-        else -> WrongRed
-    }
-    val bg = when {
-        chosen == null -> FlagBg
-        chosen == correct -> CorrectBg
-        else -> WrongBg
-    }
-    Column(Modifier.fillMaxWidth().clip(shape).background(bg).border(2.dp, tone, shape).padding(10.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("$number.", fontFamily = Mono, fontSize = 12.sp, modifier = Modifier.width(28.dp))
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceEvenly) {
-                listOf('A', 'B', 'C', 'D').forEach { c ->
-                    val badge: Pair<ImageVector, Color>? = when {
-                        c == correct -> Icons.Filled.Check to CorrectGreen
-                        c == chosen -> Icons.Filled.Close to WrongRed
-                        else -> null
-                    }
-                    Bubble(c, filled = chosen != null, fill = tone, badge = badge)
-                }
-            }
-            Icon(
-                if (flagged) Icons.Filled.Flag else Icons.Outlined.Flag,
-                contentDescription = if (flagged) "Flagged" else null,
-                tint = FlagAmber,
-                modifier = Modifier.padding(12.dp)
-            )
-        }
-        Text(tagLine, fontSize = 11.sp, color = Muted)
     }
 }
 
