@@ -69,7 +69,10 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
             composable("sheet/{id}") { e ->
                 AnswerSheetScreen(
                     vm, e.arguments?.getString("id") ?: "",
-                    onExit = { nav.popBackStack() },
+                    // Always lands on Home, regardless of whether this sheet was opened from
+                    // Home's "Continue?" card, the Answer Sheet tab, or a Retake — a draft is
+                    // only ever resumed from Home, so that's the one sensible place to exit to.
+                    onExit = { goTab("home") },
                     onSubmitted = { attemptId ->
                         nav.navigate("result/$attemptId") { popUpTo("sheet/{id}") { inclusive = true } }
                     }
