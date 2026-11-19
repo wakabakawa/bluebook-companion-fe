@@ -110,8 +110,8 @@ fun ResultScreen(
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     // FR09: a retake is a NEW attempt; the submitted one is never edited.
-                    OutlineButton("Retake this set", { onRetake(s) }, Modifier.weight(1f))
-                    OutlineButton("Withdraw this attempt", { confirmWithdraw = true }, Modifier.weight(1f))
+                    OutlineButton("Retake Set", { onRetake(s) }, Modifier.weight(1f))
+                    OutlineButton("Withdraw Set", { confirmWithdraw = true }, Modifier.weight(1f))
                 }
             }
         }
