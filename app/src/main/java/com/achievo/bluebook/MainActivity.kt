@@ -33,7 +33,10 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
-    val showBottom = Tab.values().any { it.route == route }
+    // Gated on privacyAccepted too: the privacy notice now renders full-screen inside Home
+    // instead of a blocking dialog, so without this the tab bar underneath would still let
+    // someone switch tabs before accepting or rejecting it.
+    val showBottom = vm.privacyAccepted && Tab.values().any { it.route == route }
 
     fun goTab(r: String) {
         nav.navigate(r) {

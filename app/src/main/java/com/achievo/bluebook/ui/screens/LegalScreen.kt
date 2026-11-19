@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.achievo.bluebook.ui.components.BluebookTopBar
+import com.achievo.bluebook.ui.components.OutlineButton
+import com.achievo.bluebook.ui.components.PrimaryButton
 import com.achievo.bluebook.ui.theme.FlagAmber
 import com.achievo.bluebook.ui.theme.FlagBg
 import com.achievo.bluebook.ui.theme.Maroon
@@ -24,35 +26,43 @@ import com.achievo.bluebook.ui.theme.Muted
 
 data class LegalSection(val heading: String?, val body: String)
 
+/** The scrollable title+sections content shared by [LegalScreen] and [PrivacyOnboardingScreen] -
+ *  just the body, so each caller can wrap it with whatever chrome (back button, or accept/reject
+ *  buttons) fits its own context. */
+@Composable
+private fun LegalBody(title: String, sections: List<LegalSection>, placeholderNotice: String?, modifier: Modifier = Modifier) {
+    Column(
+        modifier.verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(title, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        if (placeholderNotice != null) {
+            Row(
+                Modifier.fillMaxWidth().background(FlagBg, RoundedCornerShape(10.dp))
+                    .border(1.dp, FlagAmber, RoundedCornerShape(10.dp)).padding(12.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(Icons.Outlined.Info, contentDescription = null, tint = FlagAmber, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(placeholderNotice, fontSize = 13.sp, color = Muted)
+            }
+        }
+        sections.forEach { s ->
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (s.heading != null) Text(s.heading, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Maroon)
+                Text(s.body, fontSize = 14.sp, lineHeight = 20.sp)
+            }
+        }
+    }
+}
+
 /** Shared shell for long-form text (Terms, Privacy) - a scrollable, left-aligned page with its
  *  own back button, instead of cramming paragraphs into a small centered AlertDialog. */
 @Composable
 fun LegalScreen(title: String, sections: List<LegalSection>, placeholderNotice: String?, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         BluebookTopBar(onBack = onBack)
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(title, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-            if (placeholderNotice != null) {
-                Row(
-                    Modifier.fillMaxWidth().background(FlagBg, RoundedCornerShape(10.dp))
-                        .border(1.dp, FlagAmber, RoundedCornerShape(10.dp)).padding(12.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(Icons.Outlined.Info, contentDescription = null, tint = FlagAmber, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(placeholderNotice, fontSize = 13.sp, color = Muted)
-                }
-            }
-            sections.forEach { s ->
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (s.heading != null) Text(s.heading, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Maroon)
-                    Text(s.body, fontSize = 14.sp, lineHeight = 20.sp)
-                }
-            }
-        }
+        LegalBody(title, sections, placeholderNotice, Modifier.fillMaxSize())
     }
 }
 
@@ -114,3 +124,18 @@ fun TermsScreen(onBack: () -> Unit) = LegalScreen("Terms and Conditions", TERMS_
 
 @Composable
 fun PrivacyScreen(onBack: () -> Unit) = LegalScreen("Privacy Notice", PRIVACY_SECTIONS, null, onBack)
+
+/** FR04's gate, shown full-screen instead of a dialog so the notice gets real reading room.
+ *  Same semantics as the dialog it replaces: Accept continues into the app, Reject exits it -
+ *  there's no back button, since there's no third option. */
+@Composable
+fun PrivacyOnboardingScreen(onAccept: () -> Unit, onReject: () -> Unit) {
+    Column(Modifier.fillMaxSize()) {
+        BluebookTopBar()
+        LegalBody("Privacy Notice", PRIVACY_SECTIONS, null, Modifier.weight(1f).fillMaxWidth())
+        Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlineButton("Reject", onReject, Modifier.weight(1f))
+            PrimaryButton("Accept", onAccept, Modifier.weight(1f))
+        }
+    }
+}

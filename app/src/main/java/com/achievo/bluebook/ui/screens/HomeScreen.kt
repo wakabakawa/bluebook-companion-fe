@@ -41,15 +41,17 @@ fun HomeScreen(
     var showPicker by remember { mutableStateOf(false) }
     var confirmDiscardDraft by remember { mutableStateOf(false) }
 
-    // FR04: privacy notice must be acknowledged before the first submission. Shown on first launch.
+    // FR04: privacy notice must be acknowledged before the first submission. Shown on first
+    // launch as a full screen (not a dialog) so the notice itself gets proper room to read.
     if (!vm.privacyAccepted) {
-        NoticeDialog(
-            title = "PRIVACY NOTICE",
-            body = "ALL submissions are anonymous, and data will be handled in compliance with the Data Privacy Act of 2012!",
-            confirm = "Agree", onConfirm = { vm.acceptPrivacy() },
-            dismiss = "Exit", onDismiss = { activity?.finish() }
+        PrivacyOnboardingScreen(
+            onAccept = { vm.acceptPrivacy() },
+            onReject = { activity?.finish() }
         )
-    } else if (vm.authPhase == AuthPhase.OFFLINE) {
+        return
+    }
+
+    if (vm.authPhase == AuthPhase.OFFLINE) {
         // Sign-in is silent (FR04) - without this, a failure here is invisible; the student would
         // only ever see the downstream symptom (an empty/erroring catalogue), never the cause.
         NoticeDialog(
