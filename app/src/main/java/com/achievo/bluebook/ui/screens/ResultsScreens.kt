@@ -3,7 +3,6 @@ package com.achievo.bluebook.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -83,25 +82,19 @@ fun ResultScreen(
         NoticeDialog(title = "COULDN'T WITHDRAW", body = err, confirm = "OK", onConfirm = { vm.dismissWithdrawError() })
     }
     val score = scoreOf(a)
+    // By difficulty keeps Easy->Average->Hard's natural order; cognitive skill has no such
+    // inherent order, so it's sorted weakest-first instead (same convention as key concepts).
     val diffSlices = difficultySlices(s, a)
-    val skillSlices = cognitiveSkillSlices(s, a)
-    val diffColors = listOf(CorrectGreen, FlagAmber, WrongRed)
-    // Cyclic, not positional-semantic like diffColors — cognitive skill has no fixed cardinality
-    // or easy/hard ordering, just distinct identity.
-    val skillColors = listOf(SelectBlue, CorrectGreen, FlagAmber, WrongRed, Muted)
+    val skillSlices = cognitiveSkillSlices(s, a).sortedBy { it.percent }
     Column(Modifier.fillMaxSize()) {
         BluebookTopBar(onBack = onBack)
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item { ResultSummaryCard(s, score, dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") }
-            item { Text("By difficulty", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp)) }
-            itemsIndexed(diffSlices) { i, sl ->
-                LabeledBar(sl.label, if (sl.answered == 0) null else sl.percent, "Based on ${sl.answered} items..", diffColors[i])
+            if (diffSlices.isNotEmpty()) {
+                item { TopicRankCard("By Difficulty", diffSlices, null, "", Color.White, Maroon) }
             }
             if (skillSlices.isNotEmpty()) {
-                item { Text("By cognitive skill", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
-                itemsIndexed(skillSlices) { i, sl ->
-                    LabeledBar(sl.label, if (sl.answered == 0) null else sl.percent, "Based on ${sl.answered} items..", skillColors[i % skillColors.size])
-                }
+                item { TopicRankCard("By Cognitive Skill", skillSlices, null, "", Color.White, Maroon) }
             }
             item {
                 Spacer(Modifier.height(8.dp))
