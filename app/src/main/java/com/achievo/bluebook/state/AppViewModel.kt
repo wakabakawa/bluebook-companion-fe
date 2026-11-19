@@ -168,6 +168,30 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun dismissSubmitError() { submitError = null }
     fun consumeSubmittedAttempt() { submittedAttemptId = null }
 
+    // ---- withdraw a submitted attempt: deletes it server-side (own_attempt_erase RLS) ----
+    var withdrawLoading by mutableStateOf(false)
+        private set
+    var withdrawError by mutableStateOf<String?>(null)
+        private set
+
+    fun withdrawAttempt(attemptId: String, onDone: () -> Unit = {}) {
+        if (withdrawLoading) return
+        withdrawLoading = true
+        withdrawError = null
+        viewModelScope.launch {
+            runCatching { AttemptRepository.withdraw(attemptId) }
+                .onSuccess {
+                    attempts = attempts.filterNot { it.id == attemptId }
+                    store.saveAttempts(attempts)
+                    onDone()
+                }
+                .onFailure { withdrawError = it.toUserMessage("Couldn't withdraw this attempt. Try again.") }
+            withdrawLoading = false
+        }
+    }
+
+    fun dismissWithdrawError() { withdrawError = null }
+
     // ---- profile, privacy, settings ----
     fun saveProfile(p: Profile) { profile = p; store.saveProfile(p) }
     fun updateExamDate(iso: String?) { examDate = iso; store.saveExamDate(iso) }

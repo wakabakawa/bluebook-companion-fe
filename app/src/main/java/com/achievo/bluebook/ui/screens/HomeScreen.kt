@@ -39,6 +39,7 @@ fun HomeScreen(
 ) {
     val activity = LocalContext.current as? Activity
     var showPicker by remember { mutableStateOf(false) }
+    var confirmWithdrawId by remember { mutableStateOf<String?>(null) }
 
     // FR04: privacy notice must be acknowledged before the first submission. Shown on first launch.
     if (!vm.privacyAccepted) {
@@ -56,6 +57,18 @@ fun HomeScreen(
             body = vm.authError ?: "Couldn't sign in. Check your connection and try again.",
             confirm = "Retry", onConfirm = { vm.retrySignIn() }
         )
+    }
+
+    confirmWithdrawId?.let { id ->
+        NoticeDialog(
+            title = "WITHDRAW THIS ATTEMPT?",
+            body = "This permanently deletes this attempt and its answers. This cannot be undone.",
+            confirm = "Withdraw", onConfirm = { vm.withdrawAttempt(id); confirmWithdrawId = null },
+            dismiss = "Cancel", onDismiss = { confirmWithdrawId = null }
+        )
+    }
+    vm.withdrawError?.let { err ->
+        NoticeDialog(title = "COULDN'T WITHDRAW", body = err, confirm = "OK", onConfirm = { vm.dismissWithdrawError() })
     }
 
     if (showPicker) {
@@ -141,8 +154,10 @@ fun HomeScreen(
                 item {
                     ResultSummaryCard(
                         latestSheet, scoreOf(latest),
-                        dateText(latest.submittedAt), "${mmss(latest.totalSeconds)} mins"
-                    ) { onOpenResult(latest.id) }
+                        dateText(latest.submittedAt), "${mmss(latest.totalSeconds)} mins",
+                        onClick = { onOpenResult(latest.id) },
+                        onLongClick = { confirmWithdrawId = latest.id }
+                    )
                 }
                 item {
                     // FR20: a placeholder estimate (CC11) — see EstimatedScoreScreen for the disclaimer.

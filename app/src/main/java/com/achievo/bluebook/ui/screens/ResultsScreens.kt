@@ -49,7 +49,7 @@ fun ResultsListScreen(vm: AppViewModel, onOpen: (String) -> Unit) {
         LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(list) { a ->
                 val s = vm.sheet(a.sheetId)
-                if (s != null) ResultSummaryCard(s, scoreOf(a), dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") { onOpen(a.id) }
+                if (s != null) ResultSummaryCard(s, scoreOf(a), dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins", onClick = { onOpen(a.id) })
             }
         }
     }
@@ -69,6 +69,18 @@ fun ResultScreen(
     if (a == null || s == null) {
         LaunchedEffect(Unit) { onBack() }
         return
+    }
+    var confirmWithdraw by remember { mutableStateOf(false) }
+    if (confirmWithdraw) {
+        NoticeDialog(
+            title = "WITHDRAW THIS ATTEMPT?",
+            body = "This permanently deletes this attempt and its answers. This cannot be undone.",
+            confirm = "Withdraw", onConfirm = { confirmWithdraw = false; vm.withdrawAttempt(attemptId) { onBack() } },
+            dismiss = "Cancel", onDismiss = { confirmWithdraw = false }
+        )
+    }
+    vm.withdrawError?.let { err ->
+        NoticeDialog(title = "COULDN'T WITHDRAW", body = err, confirm = "OK", onConfirm = { vm.dismissWithdrawError() })
     }
     val score = scoreOf(a)
     val diffSlices = difficultySlices(s, a)
@@ -96,8 +108,11 @@ fun ResultScreen(
                 PrimaryButton("Analysis", onAnalysis, Modifier.fillMaxWidth())
             }
             item {
-                // FR09: a retake is a NEW attempt; the submitted one is never edited.
-                OutlineButton("Retake this set", { onRetake(s) }, Modifier.fillMaxWidth())
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // FR09: a retake is a NEW attempt; the submitted one is never edited.
+                    OutlineButton("Retake this set", { onRetake(s) }, Modifier.weight(1f))
+                    OutlineButton("Withdraw this attempt", { confirmWithdraw = true }, Modifier.weight(1f))
+                }
             }
         }
     }

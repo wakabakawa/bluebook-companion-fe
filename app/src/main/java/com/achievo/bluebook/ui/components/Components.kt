@@ -1,9 +1,11 @@
 package com.achievo.bluebook.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -113,16 +115,23 @@ fun OutlineButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     ) { Text(text, fontWeight = FontWeight.SemiBold) }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
     color: Color = Color.White,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(16.dp)
     val base = modifier.fillMaxWidth().shadow(3.dp, shape).clip(shape).background(color)
-    Column((if (onClick != null) base.clickable(onClick = onClick) else base).padding(16.dp), content = content)
+    val interactable = when {
+        onLongClick != null -> base.combinedClickable(onLongClick = onLongClick, onClick = onClick ?: {})
+        onClick != null -> base.clickable(onClick = onClick)
+        else -> base
+    }
+    Column(interactable.padding(16.dp), content = content)
 }
 
 @Composable
@@ -137,10 +146,14 @@ fun CountChip(count: Int, label: String, fg: Color, bg: Color, modifier: Modifie
     }
 }
 
-/** Score card used on Home, Results list and Results. Blank is shown separately (FR10, BR05). */
+/** Score card used on Home, Results list and Results. Blank is shown separately (FR10, BR05).
+ *  [onLongClick] is only wired up on Home, as the entry point for withdrawing the latest attempt. */
 @Composable
-fun ResultSummaryCard(sheet: Sheet, score: ScoreResult, dateLabel: String, timeLabel: String, onClick: (() -> Unit)? = null) {
-    AppCard(color = CardPink, onClick = onClick) {
+fun ResultSummaryCard(
+    sheet: Sheet, score: ScoreResult, dateLabel: String, timeLabel: String,
+    onClick: (() -> Unit)? = null, onLongClick: (() -> Unit)? = null
+) {
+    AppCard(color = CardPink, onClick = onClick, onLongClick = onLongClick) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
             Text("${score.correct}/${score.total}", fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
             Column(horizontalAlignment = Alignment.End) {

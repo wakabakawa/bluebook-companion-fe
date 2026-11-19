@@ -60,4 +60,10 @@ object AttemptRepository {
             keyVersionId = rows.firstOrNull()?.key_version_id
         )
     }
+
+    /** Deletes a submitted attempt server-side. RLS (own_attempt_erase) scopes this to the
+     *  caller's own rows; item_response cascades via its FK. */
+    suspend fun withdraw(attemptId: String) {
+        Supa.client.postgrest.from("attempt").delete { filter { eq("id", attemptId) } }
+    }
 }
