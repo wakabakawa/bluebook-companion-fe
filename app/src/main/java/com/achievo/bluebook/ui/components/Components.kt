@@ -21,12 +21,15 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -115,6 +118,15 @@ fun OutlineButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     ) { Text(text, fontWeight = FontWeight.SemiBold) }
 }
 
+/** A hold must last this long before [AppCard]'s onLongClick fires — longer than the system
+ *  default so a hold-to-delete isn't triggered by an ordinary press-and-drag-to-scroll. */
+private const val HOLD_TO_DELETE_MS = 2000L
+
+private class LongHoldViewConfiguration(
+    base: ViewConfiguration,
+    override val longPressTimeoutMillis: Long
+) : ViewConfiguration by base
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppCard(
@@ -131,7 +143,15 @@ fun AppCard(
         onClick != null -> base.clickable(onClick = onClick)
         else -> base
     }
-    Column(interactable.padding(16.dp), content = content)
+    val card: @Composable () -> Unit = { Column(interactable.padding(16.dp), content = content) }
+    if (onLongClick != null) {
+        CompositionLocalProvider(
+            LocalViewConfiguration provides LongHoldViewConfiguration(LocalViewConfiguration.current, HOLD_TO_DELETE_MS),
+            content = card
+        )
+    } else {
+        card()
+    }
 }
 
 @Composable
