@@ -64,7 +64,15 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
             composable("sets") { SetsScreen(vm) { nav.navigate("sheet/$it") } }
             composable("results") { ResultsListScreen(vm) { nav.navigate("result/$it") } }
             composable("info") { InfoScreen() }
-            composable("settings") { SettingsScreen(vm) }
+            composable("settings") {
+                SettingsScreen(
+                    vm,
+                    onOpenTerms = { nav.navigate("terms") },
+                    onOpenPrivacy = { nav.navigate("privacy") }
+                )
+            }
+            composable("terms") { TermsScreen { nav.popBackStack() } }
+            composable("privacy") { PrivacyScreen { nav.popBackStack() } }
 
             composable("sheet/{id}") { e ->
                 AnswerSheetScreen(

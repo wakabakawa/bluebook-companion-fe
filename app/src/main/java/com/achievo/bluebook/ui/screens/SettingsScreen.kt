@@ -4,10 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -16,13 +21,9 @@ import com.achievo.bluebook.state.AppViewModel
 import com.achievo.bluebook.ui.components.*
 import com.achievo.bluebook.ui.theme.*
 
-private const val TERMS_PLACEHOLDER =
-    "Terms and conditions text pending from Achievo Institute. " +
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. (placeholder)"
-
 /** FR24, FR25: profile, privacy notice, terms, clear local data. */
 @Composable
-fun SettingsScreen(vm: AppViewModel) {
+fun SettingsScreen(vm: AppViewModel, onOpenTerms: () -> Unit, onOpenPrivacy: () -> Unit) {
     var editing by remember { mutableStateOf(false) }
     var nick by remember { mutableStateOf(vm.profile.nickname) }
     var school by remember { mutableStateOf(vm.profile.school) }
@@ -30,12 +31,6 @@ fun SettingsScreen(vm: AppViewModel) {
     var dialog by remember { mutableStateOf<String?>(null) }
 
     when (dialog) {
-        "privacy" -> NoticeDialog(
-            "PRIVACY NOTICE",
-            "ALL submissions are anonymous, and data will be handled in compliance with the Data Privacy Act of 2012!",
-            "Close", { dialog = null }
-        )
-        "terms" -> NoticeDialog("TERMS & CONDITIONS", TERMS_PLACEHOLDER, "Close", { dialog = null })
         "clear" -> NoticeDialog(
             title = "CLEAR LOCAL DATA?",
             body = "Your local profile, unfinished sheet and attempt history will be permanently removed and cannot be recovered.\n\n" +
@@ -67,8 +62,8 @@ fun SettingsScreen(vm: AppViewModel) {
             if (editing) PrimaryButton("Save", { vm.saveProfile(Profile(nick.trim(), school.trim(), course.trim())); editing = false })
 
             Text("About", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp))
-            TextButton(onClick = { dialog = "terms" }) { Text("Terms and Conditions", fontSize = 18.sp, color = SelectBlue) }
-            TextButton(onClick = { dialog = "privacy" }) { Text("Privacy Notice", fontSize = 18.sp, color = SelectBlue) }
+            AboutLinkRow("Terms and Conditions", Icons.Outlined.Article, onOpenTerms)
+            AboutLinkRow("Privacy Notice", Icons.Outlined.PrivacyTip, onOpenPrivacy)
             // FR25: version and book edition. TODO: edition comes from the backend (CC10).
             Text("App version 0.1.0  •  Book edition: sample data", fontSize = 12.sp, color = Muted)
 
@@ -78,6 +73,18 @@ fun SettingsScreen(vm: AppViewModel) {
                 Spacer(Modifier.width(6.dp))
                 Text("Clear Local Data")
             }
+        }
+    }
+}
+
+@Composable
+private fun AboutLinkRow(title: String, icon: ImageVector, onClick: () -> Unit) {
+    AppCard(onClick = onClick) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = Maroon, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Text(title, Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null, tint = Maroon)
         }
     }
 }
