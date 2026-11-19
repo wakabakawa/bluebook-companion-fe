@@ -2,6 +2,7 @@ package com.achievo.bluebook.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,11 +31,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.horizontalScroll
+import com.achievo.bluebook.R
 import com.achievo.bluebook.data.ProgressPoint
 import com.achievo.bluebook.data.ScoreResult
 import com.achievo.bluebook.data.Sheet
@@ -70,7 +73,6 @@ fun BottomBar(currentRoute: String?, onSelect: (String) -> Unit) {
     }
 }
 
-/** TODO: replace the text placeholder with the Bluebook logo drawable once the client sends assets (CC12). */
 @Composable
 fun BluebookTopBar(
     onBack: (() -> Unit)? = null,
@@ -82,7 +84,11 @@ fun BluebookTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color.White).padding(horizontal = 8.dp, vertical = 4.dp)) {
-            Text("the MAROON BLUEBOOK", color = Maroon, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
+            Image(
+                painter = painterResource(R.drawable.logo_maroon_bluebook),
+                contentDescription = "The Maroon Bluebook",
+                modifier = Modifier.height(24.dp)
+            )
         }
         Spacer(Modifier.weight(1f))
         if (actionLabel != null && onAction != null) {

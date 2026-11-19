@@ -44,7 +44,7 @@ both require network — a failed submit keeps the draft intact (never discards 
 a Retry dialog.
 
 ## Known gaps
-- Logo/branding images (placeholders in text), Inter font, exact hex values.
+- Inter font, exact hex values.
 - Not built, not designed: jump-to-item (FR06), item-level (as opposed to topic-level) Cohort
   Comparison (FR22) — would need a new published `item_cohort` projection, deliberately deferred.
 - Estimated Entrance Test Score (FR20) ships as a labeled placeholder (CC11): Achievo hasn't
