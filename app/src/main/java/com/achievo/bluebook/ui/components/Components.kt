@@ -80,14 +80,14 @@ fun BluebookTopBar(
     onAction: (() -> Unit)? = null
 ) {
     Row(
-        Modifier.fillMaxWidth().background(Maroon).height(56.dp).padding(horizontal = 12.dp),
+        Modifier.fillMaxWidth().background(Maroon).height(76.dp).padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color.White).padding(horizontal = 8.dp, vertical = 4.dp)) {
+        Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color.White).padding(horizontal = 10.dp, vertical = 6.dp)) {
             Image(
                 painter = painterResource(R.drawable.logo_maroon_bluebook),
                 contentDescription = "The Maroon Bluebook",
-                modifier = Modifier.height(24.dp)
+                modifier = Modifier.height(44.dp)
             )
         }
         Spacer(Modifier.weight(1f))

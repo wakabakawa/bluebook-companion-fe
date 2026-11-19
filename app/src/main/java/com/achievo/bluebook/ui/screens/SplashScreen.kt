@@ -22,11 +22,14 @@ fun SplashScreen(onDone: () -> Unit) {
         delay(1000); onDone()
     }
     Box(Modifier.fillMaxSize().background(Maroon), contentAlignment = Alignment.Center) {
-        Box(Modifier.fillMaxWidth().background(Color(0xFFF8F7F5)).padding(vertical = 36.dp), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.fillMaxWidth().background(Color(0xFFF8F7F5)).padding(horizontal = 32.dp, vertical = 56.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Image(
                 painter = painterResource(if (step == 0) R.drawable.logo_achievo else R.drawable.logo_maroon_bluebook),
                 contentDescription = if (step == 0) "Achievo Institute" else "The Maroon Bluebook",
-                modifier = Modifier.height(64.dp)
+                modifier = Modifier.height(140.dp)
             )
         }
     }
