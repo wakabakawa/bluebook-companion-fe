@@ -17,7 +17,7 @@ import com.achievo.bluebook.ui.theme.Maroon
 import com.achievo.bluebook.ui.theme.Mono
 import com.achievo.bluebook.ui.theme.Muted
 
-/** FR20: an estimated score range against the target program, with the gap shown — a placeholder
+/** FR20: an estimated score range against the target program, with the gap shown - a placeholder
  *  linear mapping (CC11), not a real psychometric model, pending Achievo's actual passing-score
  *  cutoffs per program/exam. Never presented as authoritative; the band/cutoff are clearly labeled. */
 @Composable
@@ -46,7 +46,7 @@ fun EstimatedScoreScreen(vm: AppViewModel, onBack: () -> Unit) {
             Text(
                 "This is a placeholder estimate from your overall mastery (${overall.percent}%, based on ${overall.answered} items), " +
                     "not a real score prediction. Achievo Institute hasn't yet supplied actual passing-score cutoffs per program or " +
-                    "entrance exam — once they do, this screen will use real cutoffs instead of the default band.",
+                    "entrance exam - once they do, this screen will use real cutoffs instead of the default band.",
                 fontSize = 12.sp, color = Muted, textAlign = TextAlign.Start
             )
         }

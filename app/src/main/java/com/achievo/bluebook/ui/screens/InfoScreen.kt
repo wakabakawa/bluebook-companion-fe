@@ -41,7 +41,7 @@ private val guide = listOf(
         "1. Tap \"Start New Sheet?\" or the Answer Sheet tab, then pick your set and subject.\n" +
             "2. Read the question on your book and tap A, B, C, or D here.\n" +
             "3. Tap the flag if you're not sure, so you can review it later.\n" +
-            "4. \"Save and Exit\" pauses and returns you to Home — your sheet stays saved on this device.\n" +
+            "4. \"Save and Exit\" pauses and returns you to Home - your sheet stays saved on this device.\n" +
             "5. Tap Submit when you're done. Submitted sheets can't be edited."
     ),
     GuideTopic(
@@ -55,26 +55,26 @@ private val guide = listOf(
         "Review Plan", Icons.AutoMirrored.Outlined.MenuBook,
         "1. Under \"Areas to improve\" (on Home or Analysis), tap \"View Review Plan\".\n" +
             "2. Set your study time budget, then tap \"Build plan\".\n" +
-            "3. Your plan ranks topics to review first, with the book page for each — \"LOW DATA\" means you've " +
+            "3. Your plan ranks topics to review first, with the book page for each - \"LOW DATA\" means you've " +
             "answered too few items of that topic to be sure yet."
     ),
     GuideTopic(
         "Cohort Comparison", Icons.Outlined.Groups,
         "On Analysis, tap \"Compare with other readers\" to see how your mastery per topic compares to other " +
-            "anonymous readers of this book. Never another person's identity — just an average, and only once " +
+            "anonymous readers of this book. Never another person's identity - just an average, and only once " +
             "enough readers have attempted that topic."
     ),
     GuideTopic(
         "Estimated Score", Icons.Outlined.Insights,
         "On Home, tap \"Estimated Entrance Test Score\" for a rough score range based on your overall mastery. " +
-            "This is a placeholder estimate, not a real prediction — Achievo hasn't supplied real passing-score " +
+            "This is a placeholder estimate, not a real prediction - Achievo hasn't supplied real passing-score " +
             "cutoffs yet."
     ),
     GuideTopic(
         "Deleting a Sheet or Result", Icons.Outlined.DeleteOutline,
         "• An unfinished sheet: on Home, press and hold the \"Continue?\" card to discard it.\n" +
             "• A submitted result: open it, then tap \"Withdraw Set\" next to \"Retake Set\".\n" +
-            "Both are permanent — your answers can't be recovered after."
+            "Both are permanent - your answers can't be recovered after."
     )
 )
 

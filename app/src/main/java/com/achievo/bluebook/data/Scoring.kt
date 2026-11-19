@@ -201,9 +201,9 @@ fun speedOf(a: Attempt, tags: List<ItemTag>? = null, fallbackRef: Int = AppConfi
 
 data class ScoreEstimate(val low: Int, val high: Int, val gap: Int)
 
-/** FR20: maps overall mastery % onto a fixed placeholder score band (CC11 — pending Achievo's
+/** FR20: maps overall mastery % onto a fixed placeholder score band (CC11 - pending Achievo's
  *  real passing-score cutoffs per program/exam). Linear, not a real psychometric model: an
- *  honest placeholder, not fabricated precision — never present this as authoritative. */
+ *  honest placeholder, not fabricated precision - never present this as authoritative. */
 fun estimatedScoreRange(
     overallMasteryPercent: Int,
     bandLow: Int = AppConfig.CC11_SCORE_BAND_LOW,
@@ -234,7 +234,7 @@ data class CohortSlice(
 
 enum class CohortStanding { BELOW, NEAR, ABOVE, UNKNOWN }
 
-/** FR22: a relative-standing label, not a fabricated percentile — the schema only has a cohort
+/** FR22: a relative-standing label, not a fabricated percentile - the schema only has a cohort
  *  MEAN (cohort_mastery), no distribution. UNKNOWN when either side isn't reliable/released yet. */
 fun cohortStanding(slice: CohortSlice, nearBand: Int = AppConfig.COHORT_NEAR_BAND_PERCENT): CohortStanding {
     val cohortPercent = slice.cohortMasteryPercent

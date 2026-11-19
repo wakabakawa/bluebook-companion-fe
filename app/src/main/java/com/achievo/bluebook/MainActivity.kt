@@ -70,7 +70,7 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                 AnswerSheetScreen(
                     vm, e.arguments?.getString("id") ?: "",
                     // Always lands on Home, regardless of whether this sheet was opened from
-                    // Home's "Continue?" card, the Answer Sheet tab, or a Retake — a draft is
+                    // Home's "Continue?" card, the Answer Sheet tab, or a Retake - a draft is
                     // only ever resumed from Home, so that's the one sensible place to exit to.
                     onExit = { goTab("home") },
                     onSubmitted = { attemptId ->

@@ -19,7 +19,7 @@ private data class TopicStatsRow(
 )
 
 /** FR22: topic-level cohort comparison, read directly from v_topic_stats (already
- *  security_invoker + granted to authenticated — no new backend surface needed). Carries no
+ *  security_invoker + granted to authenticated - no new backend surface needed). Carries no
  *  other profile's identity; a missing cohort_mastery just means "not released yet" (BR09). */
 object CohortRepository {
     suspend fun loadTopicStats(): List<CohortSlice> =

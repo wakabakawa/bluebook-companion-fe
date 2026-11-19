@@ -18,7 +18,7 @@ import com.achievo.bluebook.ui.components.*
 import com.achievo.bluebook.ui.theme.*
 
 /** FR22: how other (anonymous) readers of this book are doing on the same topics. Reads only a
- *  cohort MEAN (topic_cohort, gated by BR09's minimum-attempts threshold) — never another
+ *  cohort MEAN (topic_cohort, gated by BR09's minimum-attempts threshold) - never another
  *  profile's identity or raw data. */
 @Composable
 fun CohortComparisonScreen(vm: AppViewModel, subject: String, onBack: () -> Unit) {
@@ -72,7 +72,7 @@ private fun CohortRow(slice: CohortSlice) {
             Column(horizontalAlignment = Alignment.End) {
                 Text("You: ${slice.ownPercent}%", fontFamily = Mono, fontWeight = FontWeight.Bold)
                 Text(
-                    if (slice.cohortMasteryPercent != null) "Cohort: ${slice.cohortMasteryPercent}%" else "Cohort: —",
+                    if (slice.cohortMasteryPercent != null) "Cohort: ${slice.cohortMasteryPercent}%" else "Cohort: -",
                     fontSize = 11.sp, color = Muted
                 )
             }

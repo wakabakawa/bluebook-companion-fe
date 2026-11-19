@@ -112,7 +112,7 @@ fun ResultScreen(
 }
 
 /** A mastery bar that falls back to "Too little data!" below BR08's minimum. Used only for the
- *  single subject-level headline — the branch/key-concept lists use [TopicRankCard] instead. */
+ *  single subject-level headline - the branch/key-concept lists use [TopicRankCard] instead. */
 @Composable
 private fun MasteryBar(slice: Slice) {
     if (slice.reliable) {

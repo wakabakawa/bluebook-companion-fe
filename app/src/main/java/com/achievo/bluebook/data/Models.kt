@@ -11,7 +11,7 @@ data class ItemTag(
     val cognitiveSkill: String,
     val difficulty: Difficulty,
     val bookPage: Int?,
-    /** Per-item reference time in seconds (item override, else its difficulty's default — CC03). */
+    /** Per-item reference time in seconds (item override, else its difficulty's default - CC03). */
     val refSeconds: Int
 )
 

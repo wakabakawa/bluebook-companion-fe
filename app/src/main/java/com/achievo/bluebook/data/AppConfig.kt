@@ -15,13 +15,13 @@ object AppConfig {
     const val BUDGET_STEP_MIN = 10
     const val DEFAULT_MIN_STRONG = 1
 
-    // CC11 placeholders — pending Achievo's real passing-score cutoffs per program/exam (FR20).
+    // CC11 placeholders - pending Achievo's real passing-score cutoffs per program/exam (FR20).
     // A fixed display band and target cutoff, never presented as authoritative.
     const val CC11_SCORE_BAND_LOW = 40
     const val CC11_SCORE_BAND_HIGH = 95
     const val CC11_TARGET_CUTOFF = 75
 
-    // Tolerance for "near average" in the Cohort Comparison standing label (FR22) — no client
+    // Tolerance for "near average" in the Cohort Comparison standing label (FR22) - no client
     // input exists for this either; a placeholder like the above.
     const val COHORT_NEAR_BAND_PERCENT = 5
 

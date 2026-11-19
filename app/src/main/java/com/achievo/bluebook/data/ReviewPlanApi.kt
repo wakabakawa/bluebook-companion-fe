@@ -65,7 +65,7 @@ private data class SolveResponse(
 )
 
 /** FR21: the review-plan optimizer, served by the plan-gateway Supabase Edge Function. Builds its
- *  own topics[] from the caller's authenticated DB state server-side — the request carries only
+ *  own topics[] from the caller's authenticated DB state server-side - the request carries only
  *  the budget/strong-topic tuning, never the student's history. */
 object ReviewPlanApi {
     private const val FUNCTION_NAME = "plan-gateway"

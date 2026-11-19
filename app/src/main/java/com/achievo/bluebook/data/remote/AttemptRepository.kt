@@ -31,7 +31,7 @@ private data class ResultRow(
     val key_version_id: String?
 )
 
-/** The only path that scores an attempt — the answer key never reaches this client (SEC-08/09/11). */
+/** The only path that scores an attempt - the answer key never reaches this client (SEC-08/09/11). */
 object AttemptRepository {
     suspend fun submit(sheetId: String, draft: Draft): Attempt {
         val params = SubmitParams(

@@ -50,7 +50,7 @@ fun HomeScreen(
             dismiss = "Exit", onDismiss = { activity?.finish() }
         )
     } else if (vm.authPhase == AuthPhase.OFFLINE) {
-        // Sign-in is silent (FR04) — without this, a failure here is invisible; the student would
+        // Sign-in is silent (FR04) - without this, a failure here is invisible; the student would
         // only ever see the downstream symptom (an empty/erroring catalogue), never the cause.
         NoticeDialog(
             title = "COULDN'T CONNECT",
@@ -156,7 +156,7 @@ fun HomeScreen(
                     )
                 }
                 item {
-                    // FR20: a placeholder estimate (CC11) — see EstimatedScoreScreen for the disclaimer.
+                    // FR20: a placeholder estimate (CC11) - see EstimatedScoreScreen for the disclaimer.
                     AppCard(onClick = onEstimatedScore) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Estimated Entrance Test Score", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Bold)

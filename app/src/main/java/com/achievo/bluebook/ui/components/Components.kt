@@ -124,7 +124,7 @@ fun OutlineButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     ) { Text(text, fontWeight = FontWeight.SemiBold) }
 }
 
-/** A hold must last this long before [AppCard]'s onLongClick fires — longer than the system
+/** A hold must last this long before [AppCard]'s onLongClick fires - longer than the system
  *  default so a hold-to-delete isn't triggered by an ordinary press-and-drag-to-scroll. */
 private const val HOLD_TO_DELETE_MS = 2000L
 
@@ -260,7 +260,7 @@ fun LabeledBar(label: String, percent: Int?, caption: String, color: Color) {
     }
 }
 
-/** FR19: a topic's percent-correct across attempts, oldest first. Textual by design — proportionate
+/** FR19: a topic's percent-correct across attempts, oldest first. Textual by design - proportionate
  *  to the rest of this screen's number-forward style, not a plotted chart. */
 @Composable
 fun ProgressTrendRow(topic: String, points: List<ProgressPoint>) {

@@ -55,7 +55,7 @@ class LocalStore(context: Context) {
 
     /**
      * Cache of the Supabase-issued anonymous user id (AuthRepository.ensureSession() writes
-     * this) — a cache for display/offline rendering, never the source of truth. Supabase's own
+     * this) - a cache for display/offline rendering, never the source of truth. Supabase's own
      * Auth session storage is what's authoritative.
      */
     fun cachedUserId(): String? = sp.getString("cachedUserId", null)

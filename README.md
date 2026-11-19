@@ -1,13 +1,13 @@
-# Bluebook Companion — Android (Kotlin + Jetpack Compose)
+# Bluebook Companion - Android (Kotlin + Jetpack Compose)
 
 Frontend built from the hi-fi screens, backed by Supabase (Auth + Postgres + Edge Functions) in
-`bluebook-companion-be`'s `supabase/` project — see that repo's `docs/SUPABASE_LAYOUT.md` for the
+`bluebook-companion-be`'s `supabase/` project - see that repo's `docs/SUPABASE_LAYOUT.md` for the
 schema, RLS, and deployment details.
 
 ## Open it
 1. Android Studio (Koala or newer), JDK 17.
 2. File > Open > select this folder. Let Gradle sync (it downloads Gradle 8.7 from the wrapper properties).
-   `SUPABASE_URL`/`SUPABASE_ANON_KEY` default to the shared project — no setup needed. To point
+   `SUPABASE_URL`/`SUPABASE_ANON_KEY` default to the shared project - no setup needed. To point
    at a different one instead, copy `.env.sample` to `.env` (or `local.properties.sample` to
    `local.properties`) and fill in the override.
 3. Run on an emulator or device, Android 8.0 (API 26) or higher.
@@ -22,15 +22,15 @@ Unpublished sets show "No published answer key yet" on purpose (FR05).
 
 ## Where things are
 - `data/remote/CatalogRepository.kt`  exam set catalogue + item tags, read from `v_sheet_catalog`/`v_sheet_items` (Postgrest). Replaces the old hardcoded sample data.
-- `data/remote/AttemptRepository.kt`  submits an attempt via the `submit_attempt()` RPC — the only place the answer key is read; it never reaches this client.
-- `data/remote/CohortRepository.kt`   topic-level Anonymous Cohort Comparison (FR22), read directly from `v_topic_stats` — no new backend surface needed.
+- `data/remote/AttemptRepository.kt`  submits an attempt via the `submit_attempt()` RPC - the only place the answer key is read; it never reaches this client.
+- `data/remote/CohortRepository.kt`   topic-level Anonymous Cohort Comparison (FR22), read directly from `v_topic_stats` - no new backend surface needed.
 - `data/remote/SupabaseErrors.kt`     turns a `RestException` into a safe user-facing message (never surfaces `.message`, which embeds the request's raw headers/bearer token).
 - `data/SupabaseClient.kt`            the shared `SupabaseClient` (Auth, Postgrest, Functions).
 - `data/AuthRepository.kt`            anonymous sign-in, gated on the privacy notice (FR04).
 - `data/AppConfig.kt`                 client-pending thresholds (CC03 reference time, CC04 minimum items, CC11 estimated-score band, FR21 budget defaults). Never hardcode these in screens.
-- `data/Scoring.kt`                   scoring, difficulty, cognitive skill, subject/branch/topic/key-concept mastery, progress over time, speed split, estimated score, and cohort standing — all read from `Attempt.outcomes`, never from a client-held key. Pure functions: easy to test against a manually scored sheet.
+- `data/Scoring.kt`                   scoring, difficulty, cognitive skill, subject/branch/topic/key-concept mastery, progress over time, speed split, estimated score, and cohort standing - all read from `Attempt.outcomes`, never from a client-held key. Pure functions: easy to test against a manually scored sheet.
 - `data/LocalStore.kt`                on-device save/resume, attempt history, profile, a cache of the Supabase-issued user id (never the source of truth).
-- `data/ReviewPlanApi.kt`             FR21's one Edge Function call (`plan-gateway`, via `functions-kt`). The request carries only the budget/strong-topic tuning — the server builds the topic stats itself from the caller's own history.
+- `data/ReviewPlanApi.kt`             FR21's one Edge Function call (`plan-gateway`, via `functions-kt`). The request carries only the budget/strong-topic tuning - the server builds the topic stats itself from the caller's own history.
 - `state/AppViewModel.kt`             single source of UI state: auth phase, catalogue, submit, and review-plan loading/error states.
 - `ui/theme/`                         colors and theme. Colors are estimated from the screens: copy exact values from Figma.
 - `ui/components/`                    reusable pieces (answer rows, cards, bars, dialogs).
@@ -40,13 +40,13 @@ Unpublished sets show "No published answer key yet" on purpose (FR05).
 Browsing the catalogue and taking an answer sheet (including the in-progress draft, which stays
 local-only and is never synced) work fully offline; viewing already-scored past results stays
 offline too (outcomes are cached locally at submit time). Submitting an attempt and Review Plan
-both require network — a failed submit keeps the draft intact (never discards answers) and surfaces
+both require network - a failed submit keeps the draft intact (never discards answers) and surfaces
 a Retry dialog.
 
 ## Known gaps
 - Inter font, exact hex values.
 - Not built, not designed: jump-to-item (FR06), item-level (as opposed to topic-level) Cohort
-  Comparison (FR22) — would need a new published `item_cohort` projection, deliberately deferred.
+  Comparison (FR22) - would need a new published `item_cohort` projection, deliberately deferred.
 - Estimated Entrance Test Score (FR20) ships as a labeled placeholder (CC11): Achievo hasn't
   supplied real passing-score cutoffs per program/exam yet, so the band/gap shown are defaults,
   not real predictions.

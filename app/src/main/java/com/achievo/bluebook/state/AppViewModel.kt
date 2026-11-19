@@ -33,7 +33,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var reminderHidden by mutableStateOf(store.reminderHidden())
         private set
 
-    // ---- auth (anonymous sign-in, gated on the privacy notice — FR04) ----
+    // ---- auth (anonymous sign-in, gated on the privacy notice - FR04) ----
     var authPhase by mutableStateOf(AuthPhase.IDLE)
         private set
     var authError by mutableStateOf<String?>(null)
@@ -160,7 +160,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     store.saveDraft(null)
                     submittedAttemptId = a.id
                 }
-                .onFailure { submitError = it.toUserMessage("Couldn't submit — your answers are saved. Try again.") }
+                .onFailure { submitError = it.toUserMessage("Couldn't submit - your answers are saved. Try again.") }
             submitLoading = false
         }
     }
@@ -241,7 +241,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun dismissReviewPlanError() { reviewPlanError = null }
 
-    // ---- cohort comparison (FR22), topic-level only — reads v_topic_stats directly ----
+    // ---- cohort comparison (FR22), topic-level only - reads v_topic_stats directly ----
     var cohortSlices by mutableStateOf<List<CohortSlice>>(emptyList())
         private set
     var cohortLoading by mutableStateOf(false)
