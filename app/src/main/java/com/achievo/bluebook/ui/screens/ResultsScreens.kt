@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -118,8 +119,8 @@ fun ResultScreen(
     }
 }
 
-/** A mastery bar that falls back to "Too little data!" below BR08's minimum, used for every
- *  granularity (subject/branch/key concept) that shares this exact reliability gating. */
+/** A mastery bar that falls back to "Too little data!" below BR08's minimum. Used only for the
+ *  single subject-level headline, where a 2-column card grid (see [PercentCard]) doesn't apply. */
 @Composable
 private fun MasteryBar(slice: Slice) {
     if (slice.reliable) {
@@ -130,6 +131,47 @@ private fun MasteryBar(slice: Slice) {
     } else {
         // BR08: below the minimum, say so instead of showing a number
         LabeledBar(slice.label, null, if (slice.answered == 0) "Too little data!" else "Too little data! (${slice.answered} answered)", Muted)
+    }
+}
+
+/** Two [PercentCard]s per row, same reliability gating as [MasteryBar]. Used for branch/key-concept
+ *  mastery, where the list can get long — halves the vertical space a one-per-row bar would take. */
+@Composable
+private fun PercentCardRow(row: List<Slice>) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        row.forEach { PercentCard(it, Modifier.weight(1f)) }
+        if (row.size == 1) Spacer(Modifier.weight(1f))
+    }
+}
+
+/** A mastery card whose background fills left-to-right in proportion to [Slice.percent] — the
+ *  percent bar and its label/count live inside the same card instead of a separate strip. */
+@Composable
+private fun PercentCard(slice: Slice, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(12.dp)
+    if (!slice.reliable) {
+        // BR08: below the minimum, say so instead of showing a number
+        Column(
+            modifier.height(80.dp).clip(shape).background(TrackGray, shape).border(1.dp, Muted, shape).padding(10.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(slice.label, color = Muted, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
+            Text(
+                if (slice.answered == 0) "Too little data!" else "Too little data! (${slice.answered})",
+                fontSize = 10.sp, color = Muted
+            )
+        }
+        return
+    }
+    val fg = if (slice.percent >= 70) CorrectGreen else if (slice.percent >= 40) FlagAmber else WrongRed
+    val bg = if (slice.percent >= 70) CorrectBg else if (slice.percent >= 40) FlagBg else WrongBg
+    Box(modifier.height(80.dp).clip(shape).background(bg, shape).border(1.5.dp, fg, shape)) {
+        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction = (slice.percent / 100f).coerceIn(0f, 1f)).background(fg.copy(alpha = 0.3f)))
+        Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.Center) {
+            Text(slice.label, color = fg, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
+            Text("${slice.percent}%", fontFamily = Mono, color = fg, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Text("${slice.correct}/${slice.answered}", color = fg, fontSize = 10.sp)
+        }
     }
 }
 
@@ -167,10 +209,10 @@ fun MasteryScreen(
             item { ResultSummaryCard(s, score, dateText(a.submittedAt), "${mmss(a.totalSeconds)} mins") }
             item { Text("${s.subject} mastery", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
             item { MasteryBar(subjectSlice) }
-            items(branches) { b -> MasteryBar(b) }
+            items(branches.chunked(2)) { row -> PercentCardRow(row) }
             if (keyConcepts.isNotEmpty()) {
                 item { Text("Key concepts", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
-                items(keyConcepts) { kc -> MasteryBar(kc) }
+                items(keyConcepts.chunked(2)) { row -> PercentCardRow(row) }
             }
             item { Text("Answering speed", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
             item {
