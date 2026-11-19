@@ -215,9 +215,18 @@ fun TopicRankCard(
                 Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text(if (branch != null) "$branch: ${t.label}" else t.label, fontWeight = FontWeight.SemiBold)
-                    Text(listOfNotNull(setName, t.note).joinToString(" | "), fontSize = 11.sp, color = Muted)
+                    val subtitle = listOfNotNull(setName.ifBlank { null }, t.note).joinToString(" | ")
+                    if (subtitle.isNotBlank()) Text(subtitle, fontSize = 11.sp, color = Muted)
                 }
-                Text("${t.percent}%  (${t.correct}/${t.answered})", color = accentColor, fontWeight = FontWeight.Bold)
+                // BR08: below the minimum, say so instead of showing a number
+                if (t.reliable) {
+                    Text("${t.percent}%  (${t.correct}/${t.answered})", color = accentColor, fontWeight = FontWeight.Bold)
+                } else {
+                    Text(
+                        if (t.answered == 0) "Too little data!" else "Too little data! (${t.answered})",
+                        color = Muted, fontSize = 12.sp
+                    )
+                }
             }
         }
         if (footer != null) {
