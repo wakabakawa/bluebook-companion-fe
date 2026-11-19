@@ -40,6 +40,7 @@ fun HomeScreen(
     val activity = LocalContext.current as? Activity
     var showPicker by remember { mutableStateOf(false) }
     var confirmWithdrawId by remember { mutableStateOf<String?>(null) }
+    var confirmDiscardDraft by remember { mutableStateOf(false) }
 
     // FR04: privacy notice must be acknowledged before the first submission. Shown on first launch.
     if (!vm.privacyAccepted) {
@@ -65,6 +66,14 @@ fun HomeScreen(
             body = "This permanently deletes this attempt and its answers. This cannot be undone.",
             confirm = "Withdraw", onConfirm = { vm.withdrawAttempt(id); confirmWithdrawId = null },
             dismiss = "Cancel", onDismiss = { confirmWithdrawId = null }
+        )
+    }
+    if (confirmDiscardDraft) {
+        NoticeDialog(
+            title = "DISCARD THIS SHEET?",
+            body = "This permanently deletes your unfinished answers for this set. This cannot be undone.",
+            confirm = "Discard", onConfirm = { vm.discardDraft(); confirmDiscardDraft = false },
+            dismiss = "Cancel", onDismiss = { confirmDiscardDraft = false }
         )
     }
     vm.withdrawError?.let { err ->
@@ -132,7 +141,7 @@ fun HomeScreen(
             // FR07: unfinished sheet with set name
             if (draft != null && draftSheet != null) {
                 item {
-                    AppCard(onClick = { onContinue(draftSheet.id) }) {
+                    AppCard(onClick = { onContinue(draftSheet.id) }, onLongClick = { confirmDiscardDraft = true }) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.ListAlt, contentDescription = null, modifier = Modifier.size(32.dp))
                             Spacer(Modifier.width(10.dp))
