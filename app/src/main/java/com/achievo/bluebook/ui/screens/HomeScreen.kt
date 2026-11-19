@@ -39,7 +39,6 @@ fun HomeScreen(
 ) {
     val activity = LocalContext.current as? Activity
     var showPicker by remember { mutableStateOf(false) }
-    var confirmWithdrawId by remember { mutableStateOf<String?>(null) }
     var confirmDiscardDraft by remember { mutableStateOf(false) }
 
     // FR04: privacy notice must be acknowledged before the first submission. Shown on first launch.
@@ -60,14 +59,6 @@ fun HomeScreen(
         )
     }
 
-    confirmWithdrawId?.let { id ->
-        NoticeDialog(
-            title = "WITHDRAW THIS ATTEMPT?",
-            body = "This permanently deletes this attempt and its answers. This cannot be undone.",
-            confirm = "Withdraw", onConfirm = { vm.withdrawAttempt(id); confirmWithdrawId = null },
-            dismiss = "Cancel", onDismiss = { confirmWithdrawId = null }
-        )
-    }
     if (confirmDiscardDraft) {
         NoticeDialog(
             title = "DISCARD THIS SHEET?",
@@ -75,9 +66,6 @@ fun HomeScreen(
             confirm = "Discard", onConfirm = { vm.discardDraft(); confirmDiscardDraft = false },
             dismiss = "Cancel", onDismiss = { confirmDiscardDraft = false }
         )
-    }
-    vm.withdrawError?.let { err ->
-        NoticeDialog(title = "COULDN'T WITHDRAW", body = err, confirm = "OK", onConfirm = { vm.dismissWithdrawError() })
     }
 
     if (showPicker) {
@@ -164,8 +152,7 @@ fun HomeScreen(
                     ResultSummaryCard(
                         latestSheet, scoreOf(latest),
                         dateText(latest.submittedAt), "${mmss(latest.totalSeconds)} mins",
-                        onClick = { onOpenResult(latest.id) },
-                        onLongClick = { confirmWithdrawId = latest.id }
+                        onClick = { onOpenResult(latest.id) }
                     )
                 }
                 item {
