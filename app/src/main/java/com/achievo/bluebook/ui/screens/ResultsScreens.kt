@@ -152,24 +152,26 @@ private fun PercentCard(slice: Slice, modifier: Modifier = Modifier) {
     if (!slice.reliable) {
         // BR08: below the minimum, say so instead of showing a number
         Column(
-            modifier.height(80.dp).clip(shape).background(TrackGray, shape).border(1.dp, Muted, shape).padding(10.dp),
+            modifier.height(100.dp).clip(shape).background(TrackGray, shape).border(1.dp, Muted, shape)
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.Center
         ) {
             Text(slice.label, color = Muted, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
             Text(
                 if (slice.answered == 0) "Too little data!" else "Too little data! (${slice.answered})",
-                fontSize = 10.sp, color = Muted
+                fontSize = 10.sp, color = Muted, maxLines = 2
             )
         }
         return
     }
     val fg = if (slice.percent >= 70) CorrectGreen else if (slice.percent >= 40) FlagAmber else WrongRed
     val bg = if (slice.percent >= 70) CorrectBg else if (slice.percent >= 40) FlagBg else WrongBg
-    Box(modifier.height(80.dp).clip(shape).background(bg, shape).border(1.5.dp, fg, shape)) {
+    // Fixed (not heightIn) so the fillMaxHeight() fill-indicator below has a bounded height to resolve against.
+    Box(modifier.height(100.dp).clip(shape).background(bg, shape).border(1.5.dp, fg, shape)) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(fraction = (slice.percent / 100f).coerceIn(0f, 1f)).background(fg.copy(alpha = 0.3f)))
-        Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.Center) {
+        Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.Center) {
             Text(slice.label, color = fg, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
-            Text("${slice.percent}%", fontFamily = Mono, color = fg, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Text("${slice.percent}%", fontFamily = Mono, color = fg, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text("${slice.correct}/${slice.answered}", color = fg, fontSize = 10.sp)
         }
     }
