@@ -22,8 +22,11 @@ import com.achievo.bluebook.ui.theme.*
  *  profile's identity or raw data. */
 @Composable
 fun CohortComparisonScreen(vm: AppViewModel, subject: String, onBack: () -> Unit) {
+    // Always refetches on entry (not just when empty) - the comparison depends on the
+    // student's own mastery, which changes every time they submit another attempt, so a
+    // cached result from an earlier visit would silently go stale.
     LaunchedEffect(Unit) {
-        if (vm.cohortSlices.isEmpty() && !vm.cohortLoading) vm.loadCohort()
+        if (!vm.cohortLoading) vm.loadCohort()
     }
 
     vm.cohortError?.let { msg ->

@@ -5,7 +5,7 @@ package com.achievo.bluebook.data
  * CC01 readiness levels, CC03 reference time, CC04 minimum answered items.
  */
 object AppConfig {
-    const val MIN_ITEMS_FOR_PERCENT = 5      // CC04 placeholder
+    const val MIN_ITEMS_FOR_PERCENT = 3      // CC04/BR08 - the ALGOCOM PDF's own proposed m_min default, still unconfirmed by the client
     const val REFERENCE_SECONDS = 30         // CC03 placeholder (default per item), used by speedOf()
 
     const val BOOK_EDITION_ID = 1            // CC10 pending
