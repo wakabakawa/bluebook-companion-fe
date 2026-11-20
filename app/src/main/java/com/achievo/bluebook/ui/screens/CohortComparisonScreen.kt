@@ -50,7 +50,7 @@ fun CohortComparisonScreen(vm: AppViewModel, subject: String, onBack: () -> Unit
             if (vm.cohortLoading) {
                 item { Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Maroon) } }
             } else if (slices.isEmpty()) {
-                item { Text("No cohort data for this subject yet.", color = Muted) }
+                item { Text("Answer a sheet in this subject to see a comparison here.", color = Muted) }
             }
             items(slices) { slice -> CohortRow(slice) }
         }
@@ -64,7 +64,8 @@ private fun CohortRow(slice: CohortSlice) {
         CohortStanding.ABOVE -> "Above average" to CorrectGreen
         CohortStanding.BELOW -> "Below average" to WrongRed
         CohortStanding.NEAR -> "Near average" to FlagAmber
-        CohortStanding.UNKNOWN -> "Not enough data yet" to Muted
+        CohortStanding.UNKNOWN ->
+            (if (!slice.reliable) "Answer a few more items on this topic to compare" else "Not enough other readers yet") to Muted
     }
     AppCard {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
