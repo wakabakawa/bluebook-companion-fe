@@ -14,7 +14,7 @@ private data class TopicStatsRow(
     val branch_label: String,
     val answered: Int,
     val correct: Int,
-    val cohort_mastery: String?, // PostgREST serializes numeric as a string
+    val cohort_mastery: Double?,
     val reliable: Boolean
 )
 
@@ -31,7 +31,7 @@ object CohortRepository {
                 branchLabel = it.branch_label,
                 ownAnswered = it.answered,
                 ownCorrect = it.correct,
-                cohortMasteryPercent = it.cohort_mastery?.toDoubleOrNull()?.let { m -> (m * 100).toInt() },
+                cohortMasteryPercent = it.cohort_mastery?.let { m -> (m * 100).toInt() },
                 reliable = it.reliable && it.answered >= AppConfig.MIN_ITEMS_FOR_PERCENT
             )
         }
