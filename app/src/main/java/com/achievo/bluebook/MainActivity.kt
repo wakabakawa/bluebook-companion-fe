@@ -83,7 +83,18 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     // Always lands on Home, regardless of whether this sheet was opened from
                     // Home's "Continue?" card, the Answer Sheet tab, or a Retake - a draft is
                     // only ever resumed from Home, so that's the one sensible place to exit to.
-                    onExit = { goTab("home") },
+                    //
+                    // Deliberately NOT goTab("home"): goTab's popUpTo(){saveState=true} +
+                    // restoreState=true is meant for switching bottom-nav tabs, and repeatedly
+                    // targeting the same already-present "home" entry with it (once per sheet
+                    // exit, on top of every tab switch) left the back stack in a state where a
+                    // second exit would stop the sheet's lifecycle (its timer froze) without
+                    // actually completing the navigation. A plain popBackStack needs none of
+                    // that save/restore machinery - "home" is always already on the stack below
+                    // this screen, so popping straight to it is both simpler and reliable.
+                    onExit = {
+                        if (!nav.popBackStack("home", inclusive = false)) nav.navigate("home")
+                    },
                     onSubmitted = { attemptId ->
                         nav.navigate("result/$attemptId") { popUpTo("sheet/{id}") { inclusive = true } }
                     }
