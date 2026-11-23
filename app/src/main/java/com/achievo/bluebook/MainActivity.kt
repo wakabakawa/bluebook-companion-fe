@@ -106,12 +106,14 @@ fun BluebookApp(vm: AppViewModel = viewModel()) {
                     vm, id,
                     onBack = { nav.popBackStack() },
                     onAnalysis = { nav.navigate("mastery/$id") },
+                    onReviewMistakes = { nav.navigate("review/$id") },
                     onRetake = { sheet ->
                         vm.startSheet(sheet)
                         nav.navigate("sheet/${sheet.id}")
                     }
                 )
             }
+            composable("review/{id}") { e -> ReviewScreen(vm, e.arguments?.getString("id") ?: "") { nav.popBackStack() } }
             composable("mastery/{id}") { e ->
                 MasteryScreen(
                     vm, e.arguments?.getString("id") ?: "",

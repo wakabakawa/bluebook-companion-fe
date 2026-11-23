@@ -61,6 +61,7 @@ fun ResultScreen(
     attemptId: String,
     onBack: () -> Unit,
     onAnalysis: () -> Unit,
+    onReviewMistakes: () -> Unit,
     onRetake: (Sheet) -> Unit
 ) {
     val a = vm.attempt(attemptId)
@@ -98,7 +99,10 @@ fun ResultScreen(
             }
             item {
                 Spacer(Modifier.height(8.dp))
-                PrimaryButton("Analysis", onAnalysis, Modifier.fillMaxWidth())
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    PrimaryButton("Analysis", onAnalysis, Modifier.weight(1f))
+                    PrimaryButton("Review Mistakes", onReviewMistakes, Modifier.weight(1f))
+                }
             }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
