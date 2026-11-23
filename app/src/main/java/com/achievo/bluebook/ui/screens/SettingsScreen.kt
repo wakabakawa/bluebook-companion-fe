@@ -33,8 +33,8 @@ fun SettingsScreen(vm: AppViewModel, onOpenTerms: () -> Unit, onOpenPrivacy: () 
     when (dialog) {
         "clear" -> NoticeDialog(
             title = "CLEAR LOCAL DATA?",
-            body = "Your local profile, unfinished sheet and attempt history will be permanently removed and cannot be recovered.\n\n" +
-                "Anonymous records already added to the cohort statistics cannot be individually withdrawn, because they carry no identifier linking them to this device.",
+            body = "Permanently removes your profile, history and unfinished sheet.\n\n" +
+                "Cohort stats you've contributed can't be individually removed.",
             confirm = "Clear",
             onConfirm = {
                 vm.clearLocalData()

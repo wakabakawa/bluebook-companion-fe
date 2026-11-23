@@ -56,7 +56,7 @@ fun SetsScreen(vm: AppViewModel, onOpenSheet: (String) -> Unit) {
     pending?.let { p ->
         NoticeDialog(
             title = "UNFINISHED SHEET",
-            body = "You have an unfinished answer sheet. Starting a new one will discard it.\n\nContinue?",
+            body = "Starting a new sheet will discard your unfinished one. Continue?",
             confirm = "Start New", onConfirm = { pending = null; begin(p) },
             dismiss = "Back", onDismiss = { pending = null }
         )

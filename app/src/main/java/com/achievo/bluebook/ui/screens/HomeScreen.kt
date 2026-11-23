@@ -26,6 +26,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +65,7 @@ fun HomeScreen(
     if (confirmDiscardDraft) {
         NoticeDialog(
             title = "DISCARD THIS SHEET?",
-            body = "This permanently deletes your unfinished answers for this set. This cannot be undone.",
+            body = "Permanently deletes your unfinished answers. Can't be undone.",
             confirm = "Discard", onConfirm = { vm.discardDraft(); confirmDiscardDraft = false },
             dismiss = "Cancel", onDismiss = { confirmDiscardDraft = false }
         )
@@ -110,8 +111,19 @@ fun HomeScreen(
                                 Text("No Exam Date Set", color = FlagAmber, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                                 Text("You haven't set your target exam date yet.", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Muted)
                             } else {
+                                val examDate = LocalDate.parse(iso)
+                                val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), examDate)
                                 Text("Exam Date:", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                                Text(LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("MM/dd/yyyy")), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                Text(examDate.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                Text(
+                                    when {
+                                        daysLeft > 0 -> "$daysLeft day${if (daysLeft == 1L) "" else "s"} left"
+                                        daysLeft == 0L -> "Today!"
+                                        else -> "Date has passed"
+                                    },
+                                    fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                                    color = if (daysLeft in 0..1) WrongRed else Muted
+                                )
                             }
                         }
                         Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null, tint = Maroon)

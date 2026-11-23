@@ -125,29 +125,29 @@ private fun BudgetStepper(value: Int, onChange: (Int) -> Unit) {
     }
 }
 
+/** Mastery as a bar (magnitude, status-colored) instead of bare numbers - lets topics be
+ *  compared at a glance instead of read one row at a time. */
 @Composable
 private fun PlanRow(e: ReviewPlanEntry) {
     val label = "${e.branchLabel}: ${e.topicLabel}"
+    val masteryPercent = (e.mastery * 100).roundToInt()
+    val stalenessPercent = (e.staleness * 100).roundToInt()
+    val color = if (masteryPercent >= 70) CorrectGreen else if (masteryPercent >= 40) FlagAmber else WrongRed
     val caption = listOfNotNull(
         e.bookPageRef?.let { "Pg $it" },
-        "${e.costMin} min"
+        "${e.costMin} min",
+        "$stalenessPercent% stale"
     ).joinToString(" | ")
 
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("${e.rank}.", color = Maroon, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.width(8.dp))
-        Column(Modifier.weight(1f)) {
-            Text(label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            Text(caption, fontSize = 11.sp, color = Muted)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (e.strong) TagBadge("STRONG", CorrectGreen, CorrectBg)
-                if (!e.reliable) TagBadge("LOW DATA", FlagAmber, FlagBg)
-            }
+    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("${e.rank}.", color = Maroon, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(8.dp))
+            Text(label, Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            if (e.strong) TagBadge("STRONG", CorrectGreen, CorrectBg)
+            if (!e.reliable) TagBadge("LOW DATA", FlagAmber, FlagBg)
         }
-        Column(horizontalAlignment = Alignment.End) {
-            Text("${(e.mastery * 100).roundToInt()}%", color = Maroon, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text("${(e.staleness * 100).roundToInt()}% stale", fontSize = 11.sp, color = Muted)
-        }
+        LabeledBar("Mastery", masteryPercent, caption, color)
     }
 }
 

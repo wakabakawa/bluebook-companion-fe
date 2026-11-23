@@ -1,6 +1,7 @@
 package com.achievo.bluebook.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,16 +28,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.horizontalScroll
 import com.achievo.bluebook.R
 import com.achievo.bluebook.data.ProgressPoint
 import com.achievo.bluebook.data.ScoreResult
@@ -114,10 +122,11 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 }
 
 @Composable
-fun OutlineButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun OutlineButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = 48.dp),
+        enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.5.dp, Maroon),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = Maroon)
@@ -260,23 +269,66 @@ fun LabeledBar(label: String, percent: Int?, caption: String, color: Color) {
     }
 }
 
-/** FR19: a topic's percent-correct across attempts, oldest first. Textual by design - proportionate
- *  to the rest of this screen's number-forward style, not a plotted chart. */
+/** FR19: a topic's percent-correct across attempts, oldest first, as a connected line chart.
+ *  Single series (one topic), so no legend is needed - the line itself stays a neutral brand
+ *  hairline (the trend shape is the point, not identity), while each dot carries status color
+ *  (the same 70/40 red-amber-green threshold used everywhere else in this app) so performance
+ *  reads at a glance. Only the most recent point is directly labeled (never a number on every
+ *  point); the Attempt-N/date row beneath doubles as the table-view fallback so the raw values
+ *  stay readable even without the chart. */
 @Composable
 fun ProgressTrendRow(topic: String, points: List<ProgressPoint>) {
+    val textMeasurer = rememberTextMeasurer()
     Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
         Text(topic, fontWeight = FontWeight.SemiBold)
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Spacer(Modifier.height(4.dp))
+        Canvas(Modifier.fillMaxWidth().height(100.dp)) {
+            val leftPad = 8.dp.toPx(); val rightPad = 8.dp.toPx()
+            val topPad = 20.dp.toPx(); val bottomPad = 8.dp.toPx()
+            val plotW = size.width - leftPad - rightPad
+            val plotH = size.height - topPad - bottomPad
+
+            fun xFor(i: Int) = leftPad + if (points.size <= 1) plotW / 2 else plotW * i / (points.size - 1)
+            fun yFor(pct: Int) = topPad + plotH * (1 - pct / 100f)
+
+            // Gridlines at this app's own mastery bands (0/40/70/100), recessive hairlines.
+            listOf(0, 40, 70, 100).forEach { pct ->
+                val y = yFor(pct)
+                drawLine(TrackGray, Offset(leftPad, y), Offset(size.width - rightPad, y), strokeWidth = 1.dp.toPx())
+            }
+
+            if (points.size > 1) {
+                val path = Path()
+                points.forEachIndexed { i, p ->
+                    val x = xFor(i); val y = yFor(p.slice.percent)
+                    if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                }
+                drawPath(path, Maroon, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
+
+            points.forEachIndexed { i, p ->
+                val x = xFor(i); val y = yFor(p.slice.percent)
+                val pct = p.slice.percent
+                val color = if (pct >= 70) CorrectGreen else if (pct >= 40) FlagAmber else WrongRed
+                drawCircle(Color.White, radius = 6.dp.toPx(), center = Offset(x, y)) // surface ring
+                drawCircle(color, radius = 4.dp.toPx(), center = Offset(x, y))
+
+                if (i == points.lastIndex) {
+                    val style = TextStyle(color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    val measured = textMeasurer.measure("$pct%", style)
+                    drawText(
+                        textMeasurer, "$pct%", style = style,
+                        topLeft = Offset(
+                            (x - measured.size.width).coerceAtLeast(leftPad),
+                            (y - measured.size.height - 4.dp.toPx()).coerceAtLeast(0f)
+                        )
+                    )
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             points.forEachIndexed { i, p ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    val pct = p.slice.percent
-                    Text(
-                        "$pct%", fontFamily = Mono, fontWeight = FontWeight.Bold,
-                        color = if (pct >= 70) CorrectGreen else if (pct >= 40) FlagAmber else WrongRed
-                    )
                     Text("Attempt ${i + 1}", fontSize = 10.sp, color = Muted)
                     Text(dateText(p.submittedAt), fontSize = 10.sp, color = Muted)
                 }

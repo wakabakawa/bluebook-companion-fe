@@ -58,6 +58,7 @@ fun AnswerSheetScreen(
     var showReminder by remember { mutableStateOf(!vm.reminderHidden) }
     var dontAsk by remember { mutableStateOf(false) }
     var showSubmit by remember { mutableStateOf(false) }
+    var showExitConfirm by remember { mutableStateOf(false) }
 
     val blanks = draft.answers.count { it == null }
     val answered = draft.answers.size - blanks
@@ -68,7 +69,7 @@ fun AnswerSheetScreen(
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             while (true) {
                 delay(1000)
-                if (!showReminder && !showSubmit) vm.tick()
+                if (!showReminder && !showSubmit && !showExitConfirm) vm.tick()
             }
         }
     }
@@ -77,12 +78,21 @@ fun AnswerSheetScreen(
         vm.persistDraft()
         onExit()
     }
-    BackHandler { saveAndExit() }
+    BackHandler { showExitConfirm = true }
+
+    if (showExitConfirm) {
+        NoticeDialog(
+            title = "SAVE AND EXIT?",
+            body = "Your progress is saved - you can continue later from Home.",
+            confirm = "Exit", onConfirm = { showExitConfirm = false; saveAndExit() },
+            dismiss = "Cancel", onDismiss = { showExitConfirm = false }
+        )
+    }
 
     if (showReminder) {
         NoticeDialog(
             title = "REMINDER!",
-            body = "This is a self-study guide, cheating only leads to tricking yourself. Answer truthfully and good luck!",
+            body = "A self-study guide - cheating only tricks yourself. Good luck!",
             confirm = "Agree",
             onConfirm = {
                 if (dontAsk) vm.hideReminder()
@@ -102,9 +112,9 @@ fun AnswerSheetScreen(
         NoticeDialog(
             title = if (hasBlanks) "BLANK ITEMS" else "CHECK CAREFULLY",
             body = if (hasBlanks) {
-                "You have $blanks blank item(s) remaining on your answer sheet. Blank items will be scored as incorrect.\n\nAre you sure you want to submit your attempt?"
+                "$blanks item(s) left blank - scored as incorrect.\n\nSubmit anyway?"
             } else {
-                "Once submitted, you won't be able to edit your answers again! If you're not sure, go back and check your answers.\n\nAre you sure you want to submit your attempt?"
+                "You can't edit answers after submitting.\n\nSubmit now?"
             },
             confirm = "Submit",
             onConfirm = {
@@ -155,7 +165,7 @@ fun AnswerSheetScreen(
             }
         }
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PrimaryButton("Save and Exit", { saveAndExit() }, Modifier.weight(1f), enabled = !vm.submitLoading)
+            PrimaryButton("Save and Exit", { showExitConfirm = true }, Modifier.weight(1f), enabled = !vm.submitLoading)
             PrimaryButton(
                 if (vm.submitLoading) "Submitting…" else "Submit",
                 { showSubmit = true }, Modifier.weight(1f), enabled = !vm.submitLoading
