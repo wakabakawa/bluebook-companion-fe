@@ -82,6 +82,10 @@ fun SetsScreen(vm: AppViewModel, onOpenSheet: (String) -> Unit) {
                 else Text("No exam sets available yet.", color = Muted)
             }
         } else if (set == null) {
+            Text(
+                "Choose a practice set to begin.", Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                fontSize = 13.sp, color = Muted
+            )
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 vm.sheets.map { it.setName }.distinct().sorted().forEach { name ->
                     Box(
@@ -92,7 +96,11 @@ fun SetsScreen(vm: AppViewModel, onOpenSheet: (String) -> Unit) {
                 }
             }
         } else {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Tap a subject to see its topics, then tap one to begin.", Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                fontSize = 13.sp, color = Muted
+            )
+            Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = query, onValueChange = { query = it },
                     modifier = Modifier.weight(1f), singleLine = true,

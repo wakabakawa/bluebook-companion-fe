@@ -99,6 +99,15 @@ fun AnswerSheetScreen(
                 showReminder = false
             },
             extra = {
+                Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp)) {
+                    Text("1. Read the question on your book and tap A, B, C, or D here.", fontSize = 13.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text("2. Tap the flag if you're not sure, so you can review it later.", fontSize = 13.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text("3. \"Save and Exit\" pauses and returns you to Home - your sheet stays saved on this device.", fontSize = 13.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text("4. Tap Submit when you're done. Submitted sheets can't be edited.", fontSize = 13.sp)
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = dontAsk, onCheckedChange = { dontAsk = it })
                     Text("Don't ask again", fontSize = 13.sp)
