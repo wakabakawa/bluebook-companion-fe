@@ -72,7 +72,10 @@ fun HomeScreen(
     }
 
     if (showPicker) {
-        val state = rememberDatePickerState()
+        val initialMillis = vm.examDate?.let {
+            LocalDate.parse(it).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        }
+        val state = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
             confirmButton = {
