@@ -26,7 +26,6 @@ private data class SubmitParams(
 @Serializable
 private data class ResultRow(
     val position: Int,
-    val selected_choice: String?,
     val is_correct: Boolean,
     val key_version_id: String?
 )
@@ -46,7 +45,13 @@ object AttemptRepository {
         val paramsJson = Json.encodeToJsonElement(params).jsonObject
         val rows = Supa.client.postgrest.rpc("submit_attempt", paramsJson).decodeList<ResultRow>()
 
-        val outcomes = rows.map { if (it.selected_choice == null) ItemOutcome.BLANK else if (it.is_correct) ItemOutcome.CORRECT else ItemOutcome.WRONG }
+        // BLANK is derived from the draft this client already has, not echoed back by the
+        // server - submit_attempt() no longer returns selected_choice at all.
+        val outcomes = rows.mapIndexed { i, row ->
+            if (draft.answers.getOrNull(i) == null) ItemOutcome.BLANK
+            else if (row.is_correct) ItemOutcome.CORRECT
+            else ItemOutcome.WRONG
+        }
 
         return Attempt(
             id = draft.attemptId,
